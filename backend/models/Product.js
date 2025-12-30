@@ -48,6 +48,7 @@ const ProductSchema = new mongoose.Schema({
   gst: { type: Number, required: true },
 
   sku: { type: String, unique: true, index: true },
+  barcodeImg: { type: String }, //
 
   Supplier_name: { type: String, required: true },
   Qty: { type: Number, default: 0 },

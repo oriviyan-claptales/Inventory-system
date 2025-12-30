@@ -6,7 +6,8 @@ import {
   getProduct,
   createProduct,
   updateProduct,
-  deleteProduct
+  deleteProduct,
+  generateBarcodeForProduct
 } from "../controllers/productController.js";
 
 import upload from "../middlewares/multer.js";
@@ -23,6 +24,8 @@ router.post("/upload", auth, upload.single("image"), async (req, res) => {
     res.status(500).json({ error: "Image upload failed" });
   }
 });
+// Is route ko add kar dena
+router.post("/generate-barcode/:sku", auth, generateBarcodeForProduct);
 
 // PUBLIC ROUTES
 router.get("/", getProducts);

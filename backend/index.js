@@ -9,6 +9,9 @@ import productRoutes from "./routes/productRoutes.js";
 import userRoutes from "./routes/user.routes.js";
 import authRoutes from "./routes/auth.js";   // ✅ ADD
 import passwordRoutes from "./routes/password.routes.js";
+import cookieParser from "cookie-parser"; // 👈 Add this import
+
+
 
 dotenv.config();
 
@@ -30,7 +33,13 @@ app.use(
   })
 );
 
+// index.js mein routes ke section mein sabse upar daal do
+// app.get("/api/users/current", (req, res) => {
+//     res.send("Route is working!");
+// });
 
+// ... baki imports ke baad
+app.use(cookieParser()); // 👈 app.use(express.json()) ke upar ya niche add karein
 app.use(express.json());
 
 // Routes

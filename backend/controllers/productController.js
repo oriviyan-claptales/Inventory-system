@@ -1,6 +1,7 @@
 // controllers/productController.js
 import Product from "../models/Product.js";
 import { generateSKU } from "../utils/skuGenerator.js";
+import { generateAndUploadBarcode } from "../utils/barcodeGenerator.js";
 
 // Get all products
 export const getProducts = async (req, res) => {
@@ -88,28 +89,106 @@ export const getProduct = async (req, res) => {
   }
 };
 
-// Create product with auto SKU
+// // Create product with auto SKU
+// export const createProduct = async (req, res) => {
+//   try {
+//     const { name, category, color, size } = req.body;
+
+//     const sku = await generateSKU({
+//       name,
+//       category,
+//       color,
+//       size
+//     });
+
+//     const newProduct = new Product({
+//       ...req.body,
+//       sku
+//     });
+
+//     const saved = await newProduct.save();
+//     res.status(201).json(saved);
+//   } catch (error) {
+//     console.error("Create product error:", error);
+//     res.status(400).json({ message: "Invalid data or SKU generation failed" });
+//   }
+// };
+
+// export const createProduct = async (req, res) => {
+//   try {
+//     const { name, category, color, size } = req.body;
+
+//     // 1. SKU generate karein
+//     const sku = await generateSKU({ name, category, color, size });
+
+//     // 2. Product create karein (initial save)
+//     const newProduct = new Product({
+//       ...req.body,
+//       sku
+//     });
+//     const savedProduct = await newProduct.save();
+
+//     // 3. Barcode generate and Cloudinary par upload karein
+//     const barcodeUrl = await generateAndUploadBarcode(sku);
+
+//     // 4. Product ko update karein barcode URL ke sath
+//     if (barcodeUrl) {
+//       savedProduct.barcodeImg = barcodeUrl;
+//       await savedProduct.save();
+//     }
+
+//     res.status(201).json(savedProduct);
+//   } catch (error) {
+//     console.error("Create product error:", error);
+//     res.status(400).json({ message: "Invalid data or SKU/Barcode generation failed" });
+//   }
+// };
+
+// 1. Create Product (Ye waisa hi rahega, bas product save karega)
 export const createProduct = async (req, res) => {
   try {
     const { name, category, color, size } = req.body;
+    
+    // SKU generate logic (jo tumhara pehle se tha)
+    const sku = await generateSKU({ name, category, color, size });
 
-    const sku = await generateSKU({
-      name,
-      category,
-      color,
-      size
-    });
+    const newProduct = new Product({ ...req.body, sku });
+    const savedProduct = await newProduct.save();
 
-    const newProduct = new Product({
-      ...req.body,
-      sku
-    });
-
-    const saved = await newProduct.save();
-    res.status(201).json(saved);
+    // Sirf product return karo, barcode abhi nahi bana
+    res.status(201).json(savedProduct); 
   } catch (error) {
-    console.error("Create product error:", error);
-    res.status(400).json({ message: "Invalid data or SKU generation failed" });
+    res.status(400).json({ message: "Product creation failed" });
+  }
+};
+
+// 2. NEW FUNCTION: Generate Barcode & Update Product
+export const generateBarcodeForProduct = async (req, res) => {
+  try {
+    const { sku } = req.params; // URL se SKU lenge
+
+    // Barcode Utility call karo
+    const barcodeUrl = await generateAndUploadBarcode(sku);
+
+    if (!barcodeUrl) {
+      return res.status(500).json({ message: "Barcode generation failed" });
+    }
+
+    // Product find karo aur update karo
+    const updatedProduct = await Product.findOneAndUpdate(
+      { sku: sku },
+      { barcodeImg: barcodeUrl }, // Field ka naam model se match karna
+      { new: true }
+    );
+
+    if (!updatedProduct) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    res.json(updatedProduct); // Updated product with image URL bhejo
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server Error" });
   }
 };
 
