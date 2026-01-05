@@ -17,6 +17,19 @@
 //     console.error("Logging Error:", error);
 //   }
 // };
+
+
+
+
+
+
+
+
+
+
+
+
+
 import Log from "../models/Log.js";
 
 export const logActivity = async (req, action, details, targetUser = null) => {

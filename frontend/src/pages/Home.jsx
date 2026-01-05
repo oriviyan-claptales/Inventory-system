@@ -179,9 +179,7 @@ export default function Home() {
             {/* Quick Actions Grid ke andar, Admin section me add kar */}
             {isAdmin && (
               <>
-                <div style={styles.actionCard} onClick={() => navigate("/users")}>
-                  {/* ... User Management button ... */}
-                </div>
+              
 
                 {/* 👇 NEW BUTTON */}
                 <div style={styles.actionCard} onClick={() => navigate("/logs")}>

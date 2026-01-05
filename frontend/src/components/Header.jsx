@@ -10,10 +10,39 @@ const Header = () => {
   const dispatch = useDispatch();
   const user = useSelector((state) => state.user.userData);
 
+  // const logout = async () => {
+  //   try {
+  //     // 1. Backend se cookie clear karo
+  //     await api.post("/auth/signout");
+
+  //     // 2. Local storage saaf karo
+  //     localStorage.removeItem("user");
+
+  //     // 3. Redux state clear karo
+  //     dispatch(logoutUser());
+
+  //     toast.success("Logged out successfully");
+
+  //     // ✅ FIX: 'navigate' ki jagah Hard Redirect use karo
+  //     // Ye browser ko force karega page reload karne ke liye
+  //     window.location.href = "/"; 
+      
+  //   } catch (error) {
+  //     console.error("Logout failed", error);
+  //     // Agar error aaye tab bhi user ko bahar fek do (Safety fallback)
+  //     localStorage.removeItem("user");
+  //     dispatch(logoutUser());
+  //     window.location.href = "/";
+  //   }
+  // };
+
+
+
   const logout = async () => {
     try {
       // 1. Backend se cookie clear karo
-      await api.post("/auth/signout");
+      // { withCredentials: true } pass karna zaroori hai agar global set nahi hai
+      await api.post("/auth/signout", {}, { withCredentials: true });
 
       // 2. Local storage saaf karo
       localStorage.removeItem("user");
@@ -23,19 +52,18 @@ const Header = () => {
 
       toast.success("Logged out successfully");
 
-      // ✅ FIX: 'navigate' ki jagah Hard Redirect use karo
-      // Ye browser ko force karega page reload karne ke liye
+      // Hard redirect to clear any residual memory/state
       window.location.href = "/"; 
       
     } catch (error) {
       console.error("Logout failed", error);
-      // Agar error aaye tab bhi user ko bahar fek do (Safety fallback)
       localStorage.removeItem("user");
       dispatch(logoutUser());
       window.location.href = "/";
     }
   };
 
+  
   return (
     <header style={styles.header}>
       <div 

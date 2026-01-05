@@ -20,9 +20,12 @@ const userSchema = new mongoose.Schema(
     // 👇 Ye 2 fields add kar
     failedLoginAttempts: { type: Number, default: 0 },
     isFrozen: { type: Boolean, default: false }, // True matlab account locked
-    
+
     resetCode: String,
     resetCodeExpire: Date,
+    // models/User.js mein ye do fields add kar:
+    loginCode: String,
+    loginCodeExpire: Date,
   },
   { timestamps: true }
 );

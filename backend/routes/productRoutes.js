@@ -57,7 +57,8 @@ import {
 import upload from "../middlewares/multer.js";
 
 // 👇 YAHAN CHANGE KIYA HAI (Nayi file se import kiya)
-import { protect as auth } from "../middlewares/authMiddleware.js"; 
+import auth from "../middlewares/auth.js";
+// import { protect as auth } from "../middlewares/authMiddleware.js"
 
 const router = express.Router();
 

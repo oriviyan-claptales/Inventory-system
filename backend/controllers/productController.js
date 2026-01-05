@@ -151,30 +151,156 @@ export const generateBarcodeForProduct = async (req, res) => {
 };
 
 // Update product details
+
+// Update product details with Audit Log
+
+
+
 export const updateProduct = async (req, res) => {
   try {
-    const updated = await Product.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
+    const productId = req.params.id;
+    const updateData = req.body;
 
-    if (!updated) return res.status(404).json({ message: "Product not found" });
+    // 1️⃣ Purana data nikalo
+    const oldProduct = await Product.findById(productId);
+    if (!oldProduct) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // 2️⃣ Comparison Logic: Pata lagao kya-kya badla hai
+    let changes = [];
+    
+    for (let key in updateData) {
+      // Sirf un fields ko pakdo jo sach mein badle hain
+      if (oldProduct[key] !== undefined && String(oldProduct[key]) !== String(updateData[key])) {
+        changes.push(`${key}: (${oldProduct[key]} ➔ ${updateData[key]})`);
+      }
+    }
+
+    // 3️⃣ Database update karo
+    const updated = await Product.findByIdAndUpdate(productId, updateData, { new: true });
+
+    // 4️⃣ Logging (Detailed version)
+    if (changes.length > 0) {
+      try {
+        const detailMessage = `Updated Product: ${oldProduct.name}. Changes: ${changes.join(", ")}`;
+        
+        await logActivity(
+          req, 
+          "PRODUCT_UPDATE", 
+          detailMessage
+        );
+      } catch (logError) {
+        console.log("Log failed:", logError.message);
+      }
+    }
 
     res.json(updated);
   } catch (error) {
+    console.error("Update Error:", error);
     res.status(400).json({ message: "Update failed" });
   }
 };
+// export const updateProduct = async (req, res) => {
+//   try {
+//     const productId = req.params.id;
+//     const updateData = req.body;
+
+//     // 1️⃣ Pehle purana data dhoondo (Taaki pata chale edit kya ho raha hai)
+//     const oldProduct = await Product.findById(productId);
+
+//     if (!oldProduct) {
+//       return res.status(404).json({ message: "Product not found" });
+//     }
+
+//     // 2️⃣ Database update karo
+//     const updated = await Product.findByIdAndUpdate(
+//       productId,
+//       updateData,
+//       { new: true } // Updated data return karega
+//     );
+
+//     // 3️⃣ Audit Log add karo
+//     // Hum details mein batayenge ki kis product ko update kiya gaya
+//     try {
+//       await logActivity(
+//         req, 
+//         "PRODUCT_UPDATE", 
+//         `Updated Product: ${oldProduct.name} (SKU: ${oldProduct.sku}). Fields changed: ${Object.keys(updateData).join(", ")}`
+//       );
+//     } catch (logError) {
+//       console.log("Log failed but product updated:", logError.message);
+//     }
+
+//     res.json(updated);
+//   } catch (error) {
+//     console.error("Update Error:", error);
+//     res.status(400).json({ message: "Update failed" });
+//   }
+// };
+
+
+// export const updateProduct = async (req, res) => {
+//   try {
+//     const updated = await Product.findByIdAndUpdate(
+//       req.params.id,
+//       req.body,
+//       { new: true }
+//     );
+
+//     if (!updated) return res.status(404).json({ message: "Product not found" });
+
+//     res.json(updated);
+//   } catch (error) {
+//     res.status(400).json({ message: "Update failed" });
+//   }
+// };
 
 // Delete product
+
+
+
+// Delete product with Audit Log
 export const deleteProduct = async (req, res) => {
   try {
-    const deleted = await Product.findByIdAndDelete(req.params.id);
-    if (!deleted) return res.status(404).json({ message: "Product not found" });
+    const productId = req.params.id;
 
-    res.json({ message: "Product deleted" });
+    // 1️⃣ Pehle Product ko dhoondo (Taaki details mil sake)
+    const product = await Product.findById(productId);
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    // 2️⃣ Ab Log Create karo (Delete hone se pehle)
+    // Try-Catch isliye lagaya taaki agar Log fail ho, tab bhi product delete ho jaye
+    try {
+      await logActivity(
+        req, 
+        "PRODUCT_DELETE", 
+        `Deleted Product: ${product.name} (SKU: ${product.sku})`
+      );
+    } catch (logError) {
+      console.log("Product delete log failed:", logError.message);
+    }
+
+    // 3️⃣ Aakhri me Product ko Database se uda do
+    await Product.findByIdAndDelete(productId);
+
+    res.json({ message: "Product deleted successfully" });
+
   } catch (error) {
-    res.status(400).json({ message: "Delete failed" });
+    console.error("Delete Product Error:", error);
+    res.status(500).json({ message: "Delete failed" });
   }
 };
+// export const deleteProduct = async (req, res) => {
+//   try {
+//     const deleted = await Product.findByIdAndDelete(req.params.id);
+//     if (!deleted) return res.status(404).json({ message: "Product not found" });
+
+//     res.json({ message: "Product deleted" });
+//   } catch (error) {
+//     res.status(400).json({ message: "Delete failed" });
+//   }
+// };

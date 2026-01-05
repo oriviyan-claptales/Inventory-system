@@ -15,22 +15,26 @@
 // export default authRouter;
 
 
-
 import express from "express";
-import { checkAuth, createUser, signIn, signOut} from "../controllers/authController.js";
-// 👇 IMPORT CHECK KAR (protect hona chahiye)
-import { protect } from "../middlewares/authMiddleware.js"; 
+import { checkAuth, createUser, signIn, signOut, verifyLoginOTP } from "../controllers/authController.js";
+
+// 👇 Sirf 'isAuth' rakhte hain (consistency ke liye)
+import isAuth from "../middlewares/isAuth.js"; 
 
 const authRouter = express.Router();
 
-// authRouter.post("/signup", signUp);
+// 1. Signin (Public Route)
 authRouter.post("/signin", signIn);
-authRouter.post("/signout", signOut);
 
-// 🛑 GALTI YAHAN THI: Pehle ye bina 'protect' ke tha
-// 👇 AB AISE LIKHNA HAI:
-authRouter.post("/create-user", protect, createUser); // ✅ 'protect' add kiya
+// 2. Signout (Protected - Taaki Log entry ho sake)
+authRouter.post("/signout", isAuth, signOut); 
 
-authRouter.get("/current", protect, checkAuth);
+// 3. Create User (Protected - Admin Only logic controller me hoga)
+// Humne 'protect' hata kar 'isAuth' kar diya
+authRouter.post("/create-user", isAuth, createUser); 
+
+// 4. Check Current User (Protected)
+authRouter.get("/current", isAuth, checkAuth);
+authRouter.post("/verify-login-otp", verifyLoginOTP);
 
 export default authRouter;
