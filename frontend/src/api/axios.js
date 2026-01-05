@@ -1,15 +1,5 @@
 import axios from "axios";
 
-// Axios instance
-// const api = axios.create({
-//   baseURL: "http://localhost:7000/api",
-// });
-
-// const api = axios.create({
-//   baseURL: "http://localhost:7000/api",
-//   withCredentials: true, // cookie ke liye important
-// });
-
 const api = axios.create({
   baseURL: "http://localhost:7000/api",
   withCredentials: true, // if cookies
@@ -37,14 +27,3 @@ export const deleteProduct = (id) => api.delete(`/products/${id}`);
 
 // default export for login & other requests
 export default api;
-
-
-
-// import axios from "axios";
-
-// const api = axios.create({
-//   baseURL: "http://localhost:7000/api",
-//   withCredentials: true, // cookie ke liye important
-// });
-
-// export default api;

@@ -1,64 +1,6 @@
-// // import User from "../models/User.js"
-
-// // export const getCurrentUser = async (req,res)=>{
-// //     try {
-// //         const userId = req.userId
-// //         res.status(202).json(userId)
-// //         console.log(userId)
-// //         // const userId = req.user.Id;
-// //         const user = await User.findById(userId);
-
-// //         if(!user){
-// //             return res.status(400).json({massage :"user not found"})
-// //         }
-// //         return res.status(200).json(user)
-
-        
-// //     } catch (error) {
-// //         return res.status(500).json({massage:`get cuurent user error ${error}`})
-
-        
-// //     }
-// // }
-
-
-// import User from "../models/User.js";
-
-// export const getCurrentUser = async (req, res) => {
-//     try {
-//         const user = await User.findById(req.userId).select("-password");
-//         if (!user) {
-//             return res.status(404).json({ message: "User not found" });
-//         }
-//         res.json(user);
-//     } catch (error) {
-//         res.status(500).json({ message: `Server error: ${error.message}` });
-//     }
-// };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
+import { logActivity } from "../utils/logger.js";
 
 // 1️⃣ Get Current User (Jo pehle se tha)
 export const getCurrentUser = async (req, res) => {
@@ -69,11 +11,6 @@ export const getCurrentUser = async (req, res) => {
     res.status(500).json({ message: "Error fetching user" });
   }
 };
-
-
-
-
-
 
 // ✅ NEW: Toggle User Freeze Status (Admin Only)
 export const toggleUserFreeze = async (req, res) => {
@@ -94,6 +31,9 @@ export const toggleUserFreeze = async (req, res) => {
     }
 
     await user.save();
+    // 👇 LOG
+    const action = user.isFrozen ? "USER_FREEZE" : "USER_UNFREEZE";
+    await logActivity(req, action, `Target User: ${user.name} (${user.email})`);
 
     res.status(200).json({ 
       message: user.isFrozen ? "User Frozen" : "User Unfrozen successfully", 
@@ -104,11 +44,6 @@ export const toggleUserFreeze = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
-
-
-
-
 
 // 2️⃣ Get All Users (Admin Only)
 export const getAllUsers = async (req, res) => {
@@ -121,23 +56,67 @@ export const getAllUsers = async (req, res) => {
   }
 };
 
-// 3️⃣ Delete User
+// // 3️⃣ Delete User
+// export const deleteUser = async (req, res) => {
+//   try {
+//     const user = await User.findById(req.params.id);
+//     if (!user) return res.status(404).json({ message: "User not found" });
+
+//     // Khud ko delete karne se roko
+//     if (user._id.toString() === req.userId) {
+//       return res.status(400).json({ message: "You cannot delete yourself!" });
+//     }
+
+//     await User.findByIdAndDelete(req.params.id);
+//     // 👇 LOG
+//     await logActivity(req, "USER_DELETE", `Deleted User: ${user.name}`);
+    
+//     res.json({ message: "User deleted successfully" });
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+
+
 export const deleteUser = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id);
-    if (!user) return res.status(404).json({ message: "User not found" });
+    const userId = req.params.id;
 
-    // Khud ko delete karne se roko
-    if (user._id.toString() === req.userId) {
-      return res.status(400).json({ message: "You cannot delete yourself!" });
+    // 🛑 1. Delete karne se PEHLE user ko dhoondho (Details ke liye)
+    const userToDelete = await User.findById(userId);
+
+    if (!userToDelete) {
+      return res.status(404).json({ message: "User not found" });
     }
 
-    await User.findByIdAndDelete(req.params.id);
-    res.json({ message: "User deleted successfully" });
+    // Khud ko delete karne se roko
+    if (req.user._id.toString() === userToDelete._id.toString()) {
+        return res.status(400).json({ message: "You cannot delete yourself!" });
+    }
+
+    // 🛑 2. Ab Delete Karo
+    await User.findByIdAndDelete(userId);
+
+    // 🛑 3. Ab Log banao (Humare paas userToDelete me details saved hain)
+    // Try-Catch lagaya hai taaki agar Log fail ho, tab bhi Frontend ko Success mile
+    try {
+        await logActivity(
+            req, 
+            "USER_DELETE", 
+            `Deleted User: ${userToDelete.name} (${userToDelete.email})`
+        );
+    } catch (logError) {
+        console.log("User deleted, but log failed:", logError.message);
+    }
+
+    res.status(200).json({ message: "User deleted successfully" });
+
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Delete Error:", error); // Terminal me asli error dikhega
+    res.status(500).json({ message: "Server error while deleting user" });
   }
 };
+
 
 // 4️⃣ Update User Details (Name, Email, Role)
 export const updateUser = async (req, res) => {

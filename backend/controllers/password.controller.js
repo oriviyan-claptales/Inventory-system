@@ -1,6 +1,7 @@
 import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import sendEmail from "../utils/sendEmail.js";
+import { logActivity } from "../utils/logger.js";
 
 // -------------------- 1. SEND CODE --------------------
 export const forgotPassword = async (req, res) => {
@@ -11,17 +12,7 @@ export const forgotPassword = async (req, res) => {
     return res.status(404).json({ message: "User not found" });
   }
 
-
-  // 🛑 FREEZE CHECK ADDED HERE
-    // if (user.isFrozen) {
-    //   return res.status(403).json({ 
-    //     message: "Your account is Frozen due to multiple failed login attempts. Contact Admin to unlock it." 
-    //   });
-    // }
-
-    // 🛑 LOGIC: Agar user frozen hai AUR wo admin NAHI hai, tabhi roko
-    // Admin ko permission hai forgot password karne ki taaki wo system se bahar na ho
-    if (user.isFrozen && user.userType !== 'admin') {
+   if (user.isFrozen && user.userType !== 'admin') {
       return res.status(403).json({ 
         message: "Your account is Frozen. Please contact the system owner." 
       });
@@ -39,6 +30,9 @@ export const forgotPassword = async (req, res) => {
     subject: "Password Reset Code",
     html: `<h2>Your OTP is ${code}</h2><p>Valid for 10 minutes</p>`,
   });
+
+  // 👇 LOG (User object available hai upar findOne se)
+    await logActivity(req, "FORGOT_PASS_REQ", `Requested reset for: ${email}`, user);
 
   res.json({ message: "Reset code sent to email" });
 };
@@ -59,27 +53,6 @@ export const verifyCode = async (req, res) => {
 
   res.json({ message: "Code verified" });
 };
-
-// -------------------- 3. RESET PASSWORD --------------------
-// export const resetPassword = async (req, res) => {
-//   const { email, password } = req.body;
-
-//   const user = await User.findOne({ email });
-//   if (!user) return res.status(404).json({ message: "User not found" });
-
-//   const salt = await bcrypt.genSalt(10);
-//   user.password = await bcrypt.hash(password, salt);
-
-//   user.resetCode = undefined;
-//   user.resetCodeExpire = undefined;
-
-//   await user.save();
-
-//   res.json({ message: "Password reset successful" });
-// };
-
-
-// Step 2: resetPassword function mein login attempts reset karein
 export const resetPassword = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -97,6 +70,9 @@ export const resetPassword = async (req, res) => {
     user.resetCode = undefined;
     user.resetCodeExpire = undefined;
     await user.save();
+    
+    // 👇 LOG
+    await logActivity(req, "PASS_RESET_SUCCESS", `Password reset for: ${email}`, user);
 
     res.status(200).json({ message: "Password reset successful" });
   } catch (error) {

@@ -2,6 +2,7 @@
 import Product from "../models/Product.js";
 import { generateSKU } from "../utils/skuGenerator.js";
 import { generateAndUploadBarcode } from "../utils/barcodeGenerator.js";
+import { logActivity } from "../utils/logger.js";
 
 // Get all products
 export const getProducts = async (req, res) => {
@@ -71,6 +72,14 @@ export const updateQtyBySKU = async (req, res) => {
     }
 
     await product.save();
+
+
+    // 👇 LOG
+    const actionType = addedQty ? "STOCK_ADD" : "STOCK_REMOVE";
+    const qtyChange = addedQty || removeQty;
+    await logActivity(req, actionType, `SKU: ${sku}, Qty: ${qtyChange}`);
+
+
     res.json(product);
   } catch (error) {
     console.error("Qty Update Error:", error);
@@ -89,62 +98,6 @@ export const getProduct = async (req, res) => {
   }
 };
 
-// // Create product with auto SKU
-// export const createProduct = async (req, res) => {
-//   try {
-//     const { name, category, color, size } = req.body;
-
-//     const sku = await generateSKU({
-//       name,
-//       category,
-//       color,
-//       size
-//     });
-
-//     const newProduct = new Product({
-//       ...req.body,
-//       sku
-//     });
-
-//     const saved = await newProduct.save();
-//     res.status(201).json(saved);
-//   } catch (error) {
-//     console.error("Create product error:", error);
-//     res.status(400).json({ message: "Invalid data or SKU generation failed" });
-//   }
-// };
-
-// export const createProduct = async (req, res) => {
-//   try {
-//     const { name, category, color, size } = req.body;
-
-//     // 1. SKU generate karein
-//     const sku = await generateSKU({ name, category, color, size });
-
-//     // 2. Product create karein (initial save)
-//     const newProduct = new Product({
-//       ...req.body,
-//       sku
-//     });
-//     const savedProduct = await newProduct.save();
-
-//     // 3. Barcode generate and Cloudinary par upload karein
-//     const barcodeUrl = await generateAndUploadBarcode(sku);
-
-//     // 4. Product ko update karein barcode URL ke sath
-//     if (barcodeUrl) {
-//       savedProduct.barcodeImg = barcodeUrl;
-//       await savedProduct.save();
-//     }
-
-//     res.status(201).json(savedProduct);
-//   } catch (error) {
-//     console.error("Create product error:", error);
-//     res.status(400).json({ message: "Invalid data or SKU/Barcode generation failed" });
-//   }
-// };
-
-// 1. Create Product (Ye waisa hi rahega, bas product save karega)
 export const createProduct = async (req, res) => {
   try {
     const { name, category, color, size } = req.body;
@@ -154,6 +107,11 @@ export const createProduct = async (req, res) => {
 
     const newProduct = new Product({ ...req.body, sku });
     const savedProduct = await newProduct.save();
+
+    
+    // 👇 LOG
+    await logActivity(req, "PRODUCT_CREATE", `Added Product: ${savedProduct.name} (SKU: ${savedProduct.sku})`);
+
 
     // Sirf product return karo, barcode abhi nahi bana
     res.status(201).json(savedProduct); 
