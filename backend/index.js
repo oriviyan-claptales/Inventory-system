@@ -18,15 +18,19 @@ const app = express();
 const PORT = process.env.PORT || 7000;
 
 const MONGO_URL =
-  process.env.MONGO_URI || "mongodb://127.0.0.1:27017/lostfound";
+  process.env.MONGO_URI;
 
+app.use(cors({
+  origin: "https://inventory-system-f.onrender.com",
+  credentials: true
+}));
 
-app.use(
-  cors({
-    origin: "https://inventory-system-f.onrender.com", // frontend exact URL
-    credentials: true,               // cookies allow
-  })
-);
+// app.use(
+//   cors({
+//     origin: "https://inventory-system-f.onrender.com", // frontend exact URL
+//     credentials: true,               // cookies allow
+//   })
+// );
 
 app.use(cookieParser()); // 👈 app.use(express.json()) ke upar ya niche add karein
 app.use(express.json());
