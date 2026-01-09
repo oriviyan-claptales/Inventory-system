@@ -23,7 +23,7 @@ const MONGO_URL =
 
 app.use(
   cors({
-    origin: "http://localhost:5173", // frontend exact URL
+    origin: "https://inventory-system-f.onrender.com", // frontend exact URL
     credentials: true,               // cookies allow
   })
 );
