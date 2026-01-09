@@ -1,3 +1,319 @@
+// import { useState, useEffect } from "react";
+// import api from "../api/axios";
+// import { useNavigate } from "react-router-dom";
+
+// export default function ForgotPassword() {
+//   const navigate = useNavigate();
+
+//   // State Management
+//   const [stage, setStage] = useState(1);
+//   const [email, setEmail] = useState("");
+//   const [code, setCode] = useState("");
+//   const [password, setPassword] = useState("");
+  
+//   // UI States
+//   const [loading, setLoading] = useState(false);
+//   const [error, setError] = useState("");
+//   const [success, setSuccess] = useState(""); // Success message box ke liye
+//   const [showPassword, setShowPassword] = useState(false);
+//   const [confirmPassword, setConfirmPassword] = useState("");
+// const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+//   // Timer State for Resend Code
+//   const [timer, setTimer] = useState(30);
+
+//   // Timer Logic
+//   useEffect(() => {
+//     let interval;
+//     if (stage === 2 && timer > 0) {
+//       interval = setInterval(() => {
+//         setTimer((prev) => prev - 1);
+//       }, 1000);
+//     }
+//     return () => clearInterval(interval);
+//   }, [stage, timer]);
+
+//   // --- STAGE 1: Send Code ---
+//   const sendCode = async () => {
+//     if (!email) return setError("Please enter your email.");
+//     setLoading(true);
+//     setError("");
+//     setSuccess("");
+    
+//     try {
+//       await api.post("/password/forgot", { email });
+//       setStage(2);
+//       setTimer(30); 
+//     } catch (err) {
+//       // Agar backend admin bypass allow karta hai, toh error nahi aayega.
+//       // Agar account frozen hai, toh yahan message dikhega.
+//       setError(err.response?.data?.message || "Failed to send code.");
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   // --- RESEND CODE ---
+//   const resendCode = async () => {
+//     if (timer > 0) return;
+//     setLoading(true);
+//     setError("");
+//     setSuccess("");
+    
+//     try {
+//       await api.post("/password/forgot", { email });
+//       setSuccess(`A new code has been sent to ${email}`);
+//       setTimer(30);
+//     } catch (err) {
+//       setError("Failed to resend code. Try again.");
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   // --- STAGE 2: Verify Code ---
+//   const verifyCode = async () => {
+//     if (!code) return setError("Please enter the verification code.");
+//     setLoading(true);
+//     setError("");
+//     setSuccess("");
+
+//     try {
+//       await api.post("/password/verify", { email, code });
+//       setStage(3);
+//     } catch (err) {
+//       setError(err.response?.data?.message || "Invalid code.");
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const resetPassword = async () => {
+//   // Check if both fields are filled
+//   if (!password || !confirmPassword) return setError("Please fill in both password fields.");
+  
+//   // Check if they match
+//   if (password !== confirmPassword) {
+//     return setError("Passwords do not match! Please check again.");
+//   }
+
+//   setLoading(true);
+//   setError("");
+//   setSuccess("");
+
+//   try {
+//     await api.post("/password/reset", { email, password });
+//     setSuccess("Password reset successful! Redirecting to login...");
+    
+//     setTimeout(() => {
+//       navigate("/login");
+//     }, 2500);
+//   } catch (err) {
+//     setError(err.response?.data?.message || "Failed to reset password.");
+//   } finally {
+//     setLoading(false);
+//   }
+// };
+
+
+
+//   return (
+//     <div style={styles.container}>
+//       <div style={styles.card}>
+        
+//         <div style={styles.header}>
+//           <h2 style={styles.title}>
+//             {stage === 1 ? "Forgot Password?" : stage === 2 ? "Verification Code" : "Reset Password"}
+//           </h2>
+//           <p style={styles.subtitle}>
+//             {stage === 1 ? "Enter your email to receive a reset code." : 
+//              stage === 2 ? `Code sent to ${email}` : 
+//              "Create a new strong password."}
+//           </p>
+//         </div>
+
+//         {/* Error Message Display */}
+//         {error && <div style={styles.errorBox}>{error}</div>}
+
+//         {/* Success Message Display (Instead of Alert) */}
+//         {success && <div style={styles.successBox}>{success}</div>}
+
+//         <div style={styles.formContent}>
+          
+//           {stage === 1 && (
+//             <>
+//               <div style={styles.inputGroup}>
+//                 <label style={styles.label}>Email Address</label>
+//                 <input 
+//                   type="email" 
+//                   placeholder="name@company.com" 
+//                   onChange={(e) => setEmail(e.target.value)} 
+//                   value={email}
+//                   style={styles.input}
+//                 />
+//               </div>
+//               <button onClick={sendCode} disabled={loading} style={loading ? styles.buttonDisabled : styles.button}>
+//                 {loading ? "Sending..." : "Send Verification Code"}
+//               </button>
+//             </>
+//           )}
+
+//           {stage === 2 && (
+//             <>
+//               <div style={styles.inputGroup}>
+//                 <label style={styles.label}>Enter OTP Code</label>
+//                 <input 
+//                   type="text" 
+//                   placeholder="e.g. 123456" 
+//                   onChange={(e) => setCode(e.target.value)} 
+//                   value={code}
+//                   style={{...styles.input, textAlign: 'center', letterSpacing: '2px', fontSize: '18px'}}
+//                 />
+//               </div>
+              
+//               <button onClick={verifyCode} disabled={loading} style={loading ? styles.buttonDisabled : styles.button}>
+//                 {loading ? "Verifying..." : "Verify Code"}
+//               </button>
+
+//               <div style={styles.resendContainer}>
+//                 {timer > 0 ? (
+//                   <p style={styles.timerText}>Resend code in {timer}s</p>
+//                 ) : (
+//                   <p onClick={resendCode} style={styles.resendLink}>
+//                     Didn't receive code? <b>Resend</b>
+//                   </p>
+//                 )}
+//               </div>
+              
+//               <p style={styles.linkText} onClick={() => {setStage(1); setError(""); setSuccess("");}}>
+//                   Change Email Address
+//               </p>
+//             </>
+//           )}
+
+//           {stage === 3 && (
+//   <>
+//     {/* New Password Field */}
+//     <div style={styles.inputGroup}>
+//       <label style={styles.label}>New Password</label>
+//       <div style={styles.passwordWrapper}>
+//         <input
+//           type={showPassword ? "text" : "password"}
+//           placeholder="Enter new password"
+//           style={styles.input}
+//           value={password}
+//           onChange={(e) => setPassword(e.target.value)}
+//         />
+//         <span onClick={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
+//           {showPassword ? "👁️" : "🙈"}
+//         </span>
+//       </div>
+//     </div>
+
+//     {/* Confirm Password Field */}
+//     <div style={styles.inputGroup}>
+//       <label style={styles.label}>Confirm New Password</label>
+//       <div style={styles.passwordWrapper}>
+//         <input
+//           type={showConfirmPassword ? "text" : "password"}
+//           placeholder="Repeat new password"
+//           style={styles.input}
+//           value={confirmPassword}
+//           onChange={(e) => setConfirmPassword(e.target.value)}
+//         />
+//         <span onClick={() => setShowConfirmPassword(!showConfirmPassword)} style={styles.eyeIcon}>
+//           {showConfirmPassword ? "👁️" : "🙈"}
+//         </span>
+//       </div>
+//     </div>
+
+//     {/* Match/Mismatch Indicator (Optional but helpful) */}
+//     {confirmPassword && (
+//       <p style={{
+//         fontSize: '12px', 
+//         color: password === confirmPassword ? 'green' : 'red', 
+//         marginTop: '-15px', 
+//         marginBottom: '15px'
+//       }}>
+//         {password === confirmPassword ? "✓ Passwords match" : "✗ Passwords do not match"}
+//       </p>
+//     )}
+
+//     <button onClick={resetPassword} disabled={loading} style={loading ? styles.buttonDisabled : styles.button}>
+//       {loading ? "Resetting..." : "Set New Password"}
+//     </button>
+//   </>
+// )}
+
+//         </div>
+
+//         <div style={styles.footer}>
+//           <span onClick={() => navigate("/login")} style={styles.backLink}>
+//               ⬅ Back to Login
+//           </span>
+//         </div>
+
+//       </div>
+//     </div>
+//   );
+// }
+
+// const styles = {
+//   // ... (Apke purane styles yahan aayenge)
+//   container: { minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#f3f4f6", fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif" },
+//   card: { backgroundColor: "#ffffff", width: "100%", maxWidth: "400px", padding: "40px", borderRadius: "12px", boxShadow: "0 10px 25px rgba(0,0,0,0.05)", border: "1px solid #e5e7eb" },
+//   header: { textAlign: "center", marginBottom: "25px" },
+//   title: { fontSize: "24px", fontWeight: "700", color: "#111827", marginBottom: "8px" },
+//   subtitle: { fontSize: "14px", color: "#6b7280", margin: 0, lineHeight: "1.4" },
+//   formContent: { marginBottom: "20px" },
+//   inputGroup: { marginBottom: "20px" },
+//   label: { display: "block", fontSize: "14px", fontWeight: "500", color: "#374151", marginBottom: "8px" },
+//   input: { width: "100%", padding: "12px 15px", fontSize: "15px", borderRadius: "6px", border: "1px solid #d1d5db", outline: "none", boxSizing: "border-box", transition: "all 0.2s" },
+//   passwordWrapper: { position: "relative", display: "flex", alignItems: "center" },
+//   eyeIcon: { position: "absolute", right: "15px", cursor: "pointer", fontSize: "18px", background: "transparent" },
+//   button: { width: "100%", padding: "12px", backgroundColor: "#1976D2", color: "#fff", border: "none", borderRadius: "6px", fontSize: "16px", fontWeight: "600", cursor: "pointer", transition: "background 0.2s" },
+//   buttonDisabled: { width: "100%", padding: "12px", backgroundColor: "#93c5fd", color: "#fff", border: "none", borderRadius: "6px", cursor: "not-allowed" },
+//   errorBox: { backgroundColor: "#fee2e2", color: "#b91c1c", padding: "10px", borderRadius: "6px", fontSize: "14px", marginBottom: "20px", textAlign: "center", border: "1px solid #fecaca" },
+  
+//   // ✅ Naya Success Box Style
+//   successBox: { backgroundColor: "#dcfce7", color: "#166534", padding: "10px", borderRadius: "6px", fontSize: "14px", marginBottom: "20px", textAlign: "center", border: "1px solid #bbf7d0" },
+  
+//   resendContainer: { textAlign: "center", marginTop: "15px" },
+//   timerText: { fontSize: "14px", color: "#9ca3af" },
+//   resendLink: { fontSize: "14px", color: "#1976D2", cursor: "pointer" },
+//   linkText: { textAlign: "center", marginTop: "10px", fontSize: "13px", color: "#6b7280", cursor: "pointer", textDecoration: "underline" },
+//   footer: { textAlign: "center", borderTop: "1px solid #e5e7eb", paddingTop: "20px" },
+//   backLink: { fontSize: "14px", color: "#1976D2", fontWeight: "600", cursor: "pointer" }
+// };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import { useState, useEffect } from "react";
 import api from "../api/axios";
 import { useNavigate } from "react-router-dom";
@@ -17,7 +333,7 @@ export default function ForgotPassword() {
   const [success, setSuccess] = useState(""); // Success message box ke liye
   const [showPassword, setShowPassword] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
-const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Timer State for Resend Code
   const [timer, setTimer] = useState(30);
@@ -45,8 +361,6 @@ const [showConfirmPassword, setShowConfirmPassword] = useState(false);
       setStage(2);
       setTimer(30); 
     } catch (err) {
-      // Agar backend admin bypass allow karta hai, toh error nahi aayega.
-      // Agar account frozen hai, toh yahan message dikhega.
       setError(err.response?.data?.message || "Failed to send code.");
     } finally {
       setLoading(false);
@@ -88,34 +402,45 @@ const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     }
   };
 
+  // --- STAGE 3: Reset Password (UPDATED WITH VALIDATION) ---
   const resetPassword = async () => {
-  // Check if both fields are filled
-  if (!password || !confirmPassword) return setError("Please fill in both password fields.");
-  
-  // Check if they match
-  if (password !== confirmPassword) {
-    return setError("Passwords do not match! Please check again.");
-  }
-
-  setLoading(true);
-  setError("");
-  setSuccess("");
-
-  try {
-    await api.post("/password/reset", { email, password });
-    setSuccess("Password reset successful! Redirecting to login...");
+    // 1. Check if both fields are filled
+    if (!password || !confirmPassword) return setError("Please fill in both password fields.");
     
-    setTimeout(() => {
-      navigate("/login");
-    }, 2500);
-  } catch (err) {
-    setError(err.response?.data?.message || "Failed to reset password.");
-  } finally {
-    setLoading(false);
-  }
-};
+    // 2. Check if they match
+    if (password !== confirmPassword) {
+      return setError("Passwords do not match! Please check again.");
+    }
 
+    // 3. STRONG PASSWORD VALIDATION (Added specific checks)
+    if (password.length < 6) {
+        return setError("Password must be at least 6 characters long!");
+    }
+    if (!/\d/.test(password)) {
+        return setError("Password must contain at least one Number (0-9)!");
+    }
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+        return setError("Password must contain at least one Special Character (@, #, $, etc.)!");
+    }
 
+    // --- Proceed if validation passes ---
+    setLoading(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      await api.post("/password/reset", { email, password });
+      setSuccess("Password reset successful! Redirecting to login...");
+      
+      setTimeout(() => {
+        navigate("/login");
+      }, 2500);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to reset password.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div style={styles.container}>
@@ -135,7 +460,7 @@ const [showConfirmPassword, setShowConfirmPassword] = useState(false);
         {/* Error Message Display */}
         {error && <div style={styles.errorBox}>{error}</div>}
 
-        {/* Success Message Display (Instead of Alert) */}
+        {/* Success Message Display */}
         {success && <div style={styles.successBox}>{success}</div>}
 
         <div style={styles.formContent}>
@@ -192,58 +517,58 @@ const [showConfirmPassword, setShowConfirmPassword] = useState(false);
           )}
 
           {stage === 3 && (
-  <>
-    {/* New Password Field */}
-    <div style={styles.inputGroup}>
-      <label style={styles.label}>New Password</label>
-      <div style={styles.passwordWrapper}>
-        <input
-          type={showPassword ? "text" : "password"}
-          placeholder="Enter new password"
-          style={styles.input}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <span onClick={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
-          {showPassword ? "👁️" : "🙈"}
-        </span>
-      </div>
-    </div>
+            <>
+              {/* New Password Field */}
+              <div style={styles.inputGroup}>
+                <label style={styles.label}>New Password</label>
+                <div style={styles.passwordWrapper}>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter new password"
+                    style={styles.input}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <span onClick={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
+                    {showPassword ? "👁️" : "🙈"}
+                  </span>
+                </div>
+              </div>
 
-    {/* Confirm Password Field */}
-    <div style={styles.inputGroup}>
-      <label style={styles.label}>Confirm New Password</label>
-      <div style={styles.passwordWrapper}>
-        <input
-          type={showConfirmPassword ? "text" : "password"}
-          placeholder="Repeat new password"
-          style={styles.input}
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-        />
-        <span onClick={() => setShowConfirmPassword(!showConfirmPassword)} style={styles.eyeIcon}>
-          {showConfirmPassword ? "👁️" : "🙈"}
-        </span>
-      </div>
-    </div>
+              {/* Confirm Password Field */}
+              <div style={styles.inputGroup}>
+                <label style={styles.label}>Confirm New Password</label>
+                <div style={styles.passwordWrapper}>
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="Repeat new password"
+                    style={styles.input}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                  />
+                  <span onClick={() => setShowConfirmPassword(!showConfirmPassword)} style={styles.eyeIcon}>
+                    {showConfirmPassword ? "👁️" : "🙈"}
+                  </span>
+                </div>
+              </div>
 
-    {/* Match/Mismatch Indicator (Optional but helpful) */}
-    {confirmPassword && (
-      <p style={{
-        fontSize: '12px', 
-        color: password === confirmPassword ? 'green' : 'red', 
-        marginTop: '-15px', 
-        marginBottom: '15px'
-      }}>
-        {password === confirmPassword ? "✓ Passwords match" : "✗ Passwords do not match"}
-      </p>
-    )}
+              {/* Match/Mismatch Indicator */}
+              {confirmPassword && (
+                <p style={{
+                  fontSize: '12px', 
+                  color: password === confirmPassword ? 'green' : 'red', 
+                  marginTop: '-15px', 
+                  marginBottom: '15px'
+                }}>
+                  {password === confirmPassword ? "✓ Passwords match" : "✗ Passwords do not match"}
+                </p>
+              )}
 
-    <button onClick={resetPassword} disabled={loading} style={loading ? styles.buttonDisabled : styles.button}>
-      {loading ? "Resetting..." : "Set New Password"}
-    </button>
-  </>
-)}
+              <button onClick={resetPassword} disabled={loading} style={loading ? styles.buttonDisabled : styles.button}>
+                {loading ? "Resetting..." : "Set New Password"}
+              </button>
+            </>
+          )}
 
         </div>
 
@@ -259,7 +584,6 @@ const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 }
 
 const styles = {
-  // ... (Apke purane styles yahan aayenge)
   container: { minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "#f3f4f6", fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif" },
   card: { backgroundColor: "#ffffff", width: "100%", maxWidth: "400px", padding: "40px", borderRadius: "12px", boxShadow: "0 10px 25px rgba(0,0,0,0.05)", border: "1px solid #e5e7eb" },
   header: { textAlign: "center", marginBottom: "25px" },
@@ -274,10 +598,7 @@ const styles = {
   button: { width: "100%", padding: "12px", backgroundColor: "#1976D2", color: "#fff", border: "none", borderRadius: "6px", fontSize: "16px", fontWeight: "600", cursor: "pointer", transition: "background 0.2s" },
   buttonDisabled: { width: "100%", padding: "12px", backgroundColor: "#93c5fd", color: "#fff", border: "none", borderRadius: "6px", cursor: "not-allowed" },
   errorBox: { backgroundColor: "#fee2e2", color: "#b91c1c", padding: "10px", borderRadius: "6px", fontSize: "14px", marginBottom: "20px", textAlign: "center", border: "1px solid #fecaca" },
-  
-  // ✅ Naya Success Box Style
   successBox: { backgroundColor: "#dcfce7", color: "#166534", padding: "10px", borderRadius: "6px", fontSize: "14px", marginBottom: "20px", textAlign: "center", border: "1px solid #bbf7d0" },
-  
   resendContainer: { textAlign: "center", marginTop: "15px" },
   timerText: { fontSize: "14px", color: "#9ca3af" },
   resendLink: { fontSize: "14px", color: "#1976D2", cursor: "pointer" },
