@@ -173,21 +173,21 @@ export const verifyLoginOTP = async (req, res) => {
     user.failedLoginAttempts = 0;
     await user.save();
 
-    // const token = await genToken(user._id);
-    // res.cookie("token", token, {
-    //   httpOnly: true,
-    //   secure: process.env.NODE_ENV === "production",
-    //   sameSite: "strict",
-    //   maxAge: 7 * 24 * 60 * 60 * 1000,
-    // });
-
     const token = await genToken(user._id);
     res.cookie("token", token, {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
+
+    // const token = await genToken(user._id);
+    // res.cookie("token", token, {
+    //   httpOnly: true,
+    //   secure: true,
+    //   sameSite: "none",
+    //   maxAge: 7 * 24 * 60 * 60 * 1000,
+    // });
 
     const { password: userPass, ...userDetails } = user._doc;
     
