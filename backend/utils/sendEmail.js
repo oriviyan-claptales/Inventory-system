@@ -51,53 +51,91 @@
 // code for real deploy
 
 
-import nodemailer from "nodemailer";
+// import nodemailer from "nodemailer";
+
+// const sendEmail = async ({ to, subject, html }) => {
+//   try {
+//     if (!process.env.EMAIL || !process.env.EMAIL_PASSWORD) {
+//       throw new Error("EMAIL or EMAIL_PASSWORD missing");
+//     }
+
+//     const transporter = nodemailer.createTransport({
+//       host: "smtp.gmail.com",
+//       port: 465,              // 🔥 465 only (Render friendly)
+//       secure: true,          // MUST true
+//       auth: {
+//         user: process.env.EMAIL,
+//         pass: process.env.EMAIL_PASSWORD,
+//       },
+//       tls: {
+//         rejectUnauthorized: false
+//       }
+//     });
+
+//     // ❌ Render pe verify mat karo (ye hi hang hota hai)
+//     // await transporter.verify();
+
+//     // 🔥 10s timeout safety (warna login hang)
+//     const sendPromise = transporter.sendMail({
+//       from: `"Oriviyan Inventory" <${process.env.EMAIL}>`,
+//       to,
+//       subject,
+//       html,
+//     });
+
+//     await Promise.race([
+//       sendPromise,
+//       new Promise((_, reject) =>
+//         setTimeout(() => reject(new Error("SMTP timeout")), 10000)
+//       )
+//     ]);
+
+//     console.log("✅ OTP email sent");
+//     return true;
+
+//   } catch (error) {
+//     console.error("❌ Email error:", error.message);
+//     throw new Error("Email sending failed");
+//   }
+// };
+
+// export default sendEmail;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 const sendEmail = async ({ to, subject, html }) => {
   try {
-    if (!process.env.EMAIL || !process.env.EMAIL_PASSWORD) {
-      throw new Error("EMAIL or EMAIL_PASSWORD missing");
-    }
-
-    const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 465,              // 🔥 465 only (Render friendly)
-      secure: true,          // MUST true
-      auth: {
-        user: process.env.EMAIL,
-        pass: process.env.EMAIL_PASSWORD,
-      },
-      tls: {
-        rejectUnauthorized: false
-      }
-    });
-
-    // ❌ Render pe verify mat karo (ye hi hang hota hai)
-    // await transporter.verify();
-
-    // 🔥 10s timeout safety (warna login hang)
-    const sendPromise = transporter.sendMail({
-      from: `"Oriviyan Inventory" <${process.env.EMAIL}>`,
+    const data = await resend.emails.send({
+      from: "Oriviyan Inventory <onboarding@resend.dev>",
       to,
       subject,
       html,
     });
 
-    await Promise.race([
-      sendPromise,
-      new Promise((_, reject) =>
-        setTimeout(() => reject(new Error("SMTP timeout")), 10000)
-      )
-    ]);
-
-    console.log("✅ OTP email sent");
+    console.log("Email sent:", data.id);
     return true;
-
   } catch (error) {
-    console.error("❌ Email error:", error.message);
+    console.error("Resend error:", error);
     throw new Error("Email sending failed");
   }
 };
 
 export default sendEmail;
-
