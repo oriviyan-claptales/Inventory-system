@@ -122,20 +122,20 @@ import { Resend } from "resend";
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const sendEmail = async ({ to, subject, html }) => {
-  try {
-    const data = await resend.emails.send({
-      from: "Oriviyan Inventory <onboarding@resend.dev>",
-      to,
-      subject,
-      html,
-    });
+  const { data, error } = await resend.emails.send({
+    from: `Oriviyan Inventory <${process.env.EMAIL_FROM}>`,
+    to,
+    subject,
+    html,
+  });
 
-    console.log("Email sent:", data.id);
-    return true;
-  } catch (error) {
-    console.error("Resend error:", error);
-    throw new Error("Email sending failed");
+  if (error) {
+    console.error("RESEND ERROR:", error);
+    throw new Error(error.message);
   }
+
+  console.log("Email sent:", data.id);   // 👈 Ab undefined nahi aayega
+  return data;
 };
 
 export default sendEmail;
