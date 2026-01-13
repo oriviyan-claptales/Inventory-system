@@ -569,10 +569,70 @@ export const signIn = async (req, res) => {
 };
 
 // --- 2. VERIFY LOGIN OTP (Stage 2: Final Login) ---
+// export const verifyLoginOTP = async (req, res) => {
+//   try {
+//     const { email, code } = req.body;
+
+//     const user = await User.findOne({
+//       email,
+//       loginCode: code,
+//       loginCodeExpire: { $gt: Date.now() },
+//     });
+
+//     if (!user) {
+//       return res.status(400).json({ message: "Invalid or expired OTP" });
+//     }
+
+//     // ✅ OTP SAHI HAI -> Ab final Login karo (Token & Cookie)
+//     user.loginCode = undefined;
+//     user.loginCodeExpire = undefined;
+//     user.failedLoginAttempts = 0;
+//     await user.save();
+
+//     // const token = await genToken(user._id);
+//     // res.cookie("token", token, {
+//     //   httpOnly: true,
+//     //   secure: process.env.NODE_ENV === "production",
+//     //   sameSite: "strict",
+//     //   maxAge: 7 * 24 * 60 * 60 * 1000,
+//     // });
+// const token = await genToken(user._id);
+// res.cookie("token", token, {
+//   httpOnly: true,
+//   secure: process.env.NODE_ENV === "production",  // leave as is
+//   sameSite: "lax",                               // <-- change strict -> lax
+//   domain: ".oriviyan.com",                        // <-- add this line
+//   maxAge: 7 * 24 * 60 * 60 * 1000,
+// });
+
+
+//     const { password: userPass, ...userDetails } = user._doc;
+    
+//     // Log Activity
+//     await logActivity(req, "LOGIN_SUCCESS", `Logged in with 2FA: ${user.email}`, user);
+
+//     res.status(200).json(userDetails);
+
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+
+// authController.js
+
 export const verifyLoginOTP = async (req, res) => {
   try {
-    const { email, code } = req.body;
+    let { email, code } = req.body;
 
+    // ✅ 1. Normalize email (trim + lowercase)
+    email = email.trim().toLowerCase();
+
+    // ✅ 2. Email domain validation
+    if (!email.endsWith("@oriviyan.com") && !email.endsWith("@mattrade.in")) {
+      return res.status(401).json({ message: "Access denied. Only company emails allowed." });
+    }
+
+    // ✅ 3. Find user with matching OTP & not expired
     const user = await User.findOne({
       email,
       loginCode: code,
@@ -583,40 +643,39 @@ export const verifyLoginOTP = async (req, res) => {
       return res.status(400).json({ message: "Invalid or expired OTP" });
     }
 
-    // ✅ OTP SAHI HAI -> Ab final Login karo (Token & Cookie)
+    // ✅ 4. OTP correct → clear OTP & reset failed attempts
     user.loginCode = undefined;
     user.loginCodeExpire = undefined;
     user.failedLoginAttempts = 0;
     await user.save();
 
-    // const token = await genToken(user._id);
-    // res.cookie("token", token, {
-    //   httpOnly: true,
-    //   secure: process.env.NODE_ENV === "production",
-    //   sameSite: "strict",
-    //   maxAge: 7 * 24 * 60 * 60 * 1000,
-    // });
-const token = await genToken(user._id);
-res.cookie("token", token, {
-  httpOnly: true,
-  secure: process.env.NODE_ENV === "production",  // leave as is
-  sameSite: "lax",                               // <-- change strict -> lax
-  domain: ".oriviyan.com",                        // <-- add this line
-  maxAge: 7 * 24 * 60 * 60 * 1000,
-});
+    // ✅ 5. Generate token
+    const token = await genToken(user._id);
 
+    // ✅ 6. Set cookie (cross-subdomain & all devices compatible)
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // https required in production
+      sameSite: "lax",       // cross-subdomain support
+      domain: ".oriviyan.com", // frontend/backend subdomain sharing
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
 
-    const { password: userPass, ...userDetails } = user._doc;
-    
-    // Log Activity
+    // ✅ 7. Prepare user object without password
+    const { password, ...userDetails } = user._doc;
+
+    // ✅ 8. Log successful login
     await logActivity(req, "LOGIN_SUCCESS", `Logged in with 2FA: ${user.email}`, user);
 
+    // ✅ 9. Send response
     res.status(200).json(userDetails);
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("verifyLoginOTP Error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
+
 
 // export const signIn = async (req, res) => {
 //   try {
