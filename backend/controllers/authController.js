@@ -1118,13 +1118,24 @@ export const verifyLoginOTP = async (req, res) => {
     //   maxAge: 7 * 24 * 60 * 60 * 1000,               // 7 days
     // });
 
+// const token = await genToken(user._id);
+// res.cookie("token", token, {
+//   httpOnly: true,
+//   secure: process.env.NODE_ENV === "production", // prod me https required
+//   sameSite: "lax",   // cross-domain friendly, dev + prod dono me kaam kare
+//   maxAge: 7 * 24 * 60 * 60 * 1000,
+// });
+
+          
 const token = await genToken(user._id);
 res.cookie("token", token, {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production", // prod me https required
-  sameSite: "lax",   // cross-domain friendly, dev + prod dono me kaam kare
+  secure: true,       // HTTPS required for "none"
+  sameSite: "none",   // cross-origin friendly
   maxAge: 7 * 24 * 60 * 60 * 1000,
+  // domain: ".oriviyan.com",   <-- free plan me hatao
 });
+
 
 
     const { password: userPass, ...userDetails } = user._doc;
