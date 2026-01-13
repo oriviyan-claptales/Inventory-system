@@ -497,76 +497,76 @@ export const checkAuth = (req, res) => {
 // };
 
 
-export const signIn = async (req, res) => {
-  try {
-    const { identifier, password } = req.body;
+// export const signIn = async (req, res) => {
+//   try {
+//     const { identifier, password } = req.body;
 
-    // 1. User dhundo (Email ya Username)
-    const user = await User.findOne({
-      $or: [{ email: identifier }, { username: identifier }]
-    });
+//     // 1. User dhundo (Email ya Username)
+//     const user = await User.findOne({
+//       $or: [{ email: identifier }, { username: identifier }]
+//     });
 
-    if (!user) return res.status(404).json({ message: "User not found" });
+//     if (!user) return res.status(404).json({ message: "User not found" });
 
-    // 2. Pehle check karo account frozen toh nahi hai
-    if (user.isFrozen) {
-      return res.status(403).json({ 
-        message: "Account is Frozen contact Admin " 
-      });
-    }
+//     // 2. Pehle check karo account frozen toh nahi hai
+//     if (user.isFrozen) {
+//       return res.status(403).json({ 
+//         message: "Account is Frozen contact Admin " 
+//       });
+//     }
 
-    // 3. Password Check karo
-    const isMatch = await bcrypt.compare(password, user.password);
+//     // 3. Password Check karo
+//     const isMatch = await bcrypt.compare(password, user.password);
 
-    if (!isMatch) {
-      // ❌ WRONG PASSWORD LOGIC
-      user.failedLoginAttempts += 1;
+//     if (!isMatch) {
+//       // ❌ WRONG PASSWORD LOGIC
+//       user.failedLoginAttempts += 1;
 
-      if (user.failedLoginAttempts >= 5) {
-        user.isFrozen = true;
-        await user.save();
+//       if (user.failedLoginAttempts >= 5) {
+//         user.isFrozen = true;
+//         await user.save();
         
-        // Log the freeze event
-        await logActivity(req, "USER_FREEZE", `Account frozen: ${user.email} (5 failed attempts)`, user);
+//         // Log the freeze event
+//         await logActivity(req, "USER_FREEZE", `Account frozen: ${user.email} (5 failed attempts)`, user);
         
-        return res.status(403).json({ 
-          message: "Too many attempts. Your account has been FROZEN." 
-        });
-      }
+//         return res.status(403).json({ 
+//           message: "Too many attempts. Your account has been FROZEN." 
+//         });
+//       }
 
-      await user.save();
-      return res.status(400).json({ 
-        message: `Invalid Password. ${5 - user.failedLoginAttempts} attempts left.` 
-      });
-    }
+//       await user.save();
+//       return res.status(400).json({ 
+//         message: `Invalid Password. ${5 - user.failedLoginAttempts} attempts left.` 
+//       });
+//     }
 
-    // ✅ SAHI PASSWORD LOGIC (2FA Trigger)
-    // Sahi password par attempts reset kar do
-    user.failedLoginAttempts = 0;
+//     // ✅ SAHI PASSWORD LOGIC (2FA Trigger)
+//     // Sahi password par attempts reset kar do
+//     user.failedLoginAttempts = 0;
     
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    user.loginCode = otp;
-    user.loginCodeExpire = Date.now() + 5 * 60 * 1000; // 5 min
-    await user.save();
+//     const otp = Math.floor(100000 + Math.random() * 900000).toString();
+//     user.loginCode = otp;
+//     user.loginCodeExpire = Date.now() + 5 * 60 * 1000; // 5 min
+//     await user.save();
 
-    // OTP Email bhejo
-    await sendEmail({
-      to: user.email,
-      subject: "Login Verification Code",
-      html: `<h2>Your Login OTP is ${otp}</h2><p>Security Alert: Your password was correct. Use this code to finish login.</p>`,
-    });
+//     // OTP Email bhejo
+//     await sendEmail({
+//       to: user.email,
+//       subject: "Login Verification Code",
+//       html: `<h2>Your Login OTP is ${otp}</h2><p>Security Alert: Your password was correct. Use this code to finish login.</p>`,
+//     });
 
-    res.status(200).json({ 
-      mfaRequired: true, 
-      email: user.email, 
-      message: "Password correct! Please enter the OTP sent to your email." 
-    });
+//     res.status(200).json({ 
+//       mfaRequired: true, 
+//       email: user.email, 
+//       message: "Password correct! Please enter the OTP sent to your email." 
+//     });
 
-  } catch (error) {
-    console.error("Login Error:", error);
-    res.status(500).json({ message: "Server Error" });
-  }
-};
+//   } catch (error) {
+//     console.error("Login Error:", error);
+//     res.status(500).json({ message: "Server Error" });
+//   }
+// };
 
 // --- 2. VERIFY LOGIN OTP (Stage 2: Final Login) ---
 // export const verifyLoginOTP = async (req, res) => {
@@ -618,63 +618,7 @@ export const signIn = async (req, res) => {
 //   }
 // };
 
-// authController.js
 
-export const verifyLoginOTP = async (req, res) => {
-  try {
-    let { email, code } = req.body;
-
-    // ✅ 1. Normalize email (trim + lowercase)
-    email = email.trim().toLowerCase();
-
-    // ✅ 2. Email domain validation
-    if (!email.endsWith("@oriviyan.com") && !email.endsWith("@mattrade.in")) {
-      return res.status(401).json({ message: "Access denied. Only company emails allowed." });
-    }
-
-    // ✅ 3. Find user with matching OTP & not expired
-    const user = await User.findOne({
-      email,
-      loginCode: code,
-      loginCodeExpire: { $gt: Date.now() },
-    });
-
-    if (!user) {
-      return res.status(400).json({ message: "Invalid or expired OTP" });
-    }
-
-    // ✅ 4. OTP correct → clear OTP & reset failed attempts
-    user.loginCode = undefined;
-    user.loginCodeExpire = undefined;
-    user.failedLoginAttempts = 0;
-    await user.save();
-
-    // ✅ 5. Generate token
-    const token = await genToken(user._id);
-
-    // ✅ 6. Set cookie (cross-subdomain & all devices compatible)
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // https required in production
-      sameSite: "lax",       // cross-subdomain support
-      domain: ".oriviyan.com", // frontend/backend subdomain sharing
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
-
-    // ✅ 7. Prepare user object without password
-    const { password, ...userDetails } = user._doc;
-
-    // ✅ 8. Log successful login
-    await logActivity(req, "LOGIN_SUCCESS", `Logged in with 2FA: ${user.email}`, user);
-
-    // ✅ 9. Send response
-    res.status(200).json(userDetails);
-
-  } catch (error) {
-    console.error("verifyLoginOTP Error:", error);
-    res.status(500).json({ message: "Server error" });
-  }
-};
 
 
 // export const signIn = async (req, res) => {
@@ -820,6 +764,98 @@ const isCompanyEmail = (email) => {
   return allowedDomains.includes(domain);
 };
 
+
+export const signIn = async (req, res) => {
+  try {
+    const { identifier, password } = req.body;
+
+    // Find user by email or username
+    const user = await User.findOne({
+      $or: [{ email: identifier }, { username: identifier }]
+    });
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+    if (user.isFrozen) return res.status(403).json({ message: "Account is Frozen. Contact Admin." });
+
+    // Check password
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      user.failedLoginAttempts += 1;
+
+      if (user.failedLoginAttempts >= 5) {
+        user.isFrozen = true;
+        await user.save();
+        await logActivity(req, "USER_FREEZE", `Account frozen: ${user.email} (5 failed attempts)`, user);
+        return res.status(403).json({ message: "Too many attempts. Your account has been FROZEN." });
+      }
+
+      await user.save();
+      return res.status(400).json({ message: `Invalid Password. ${5 - user.failedLoginAttempts} attempts left.` });
+    }
+
+    // ✅ Password correct → send OTP
+    user.failedLoginAttempts = 0;
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    user.loginCode = otp;
+    user.loginCodeExpire = Date.now() + 5 * 60 * 1000; // 5 min
+    await user.save();
+
+    await sendEmail({
+      to: user.email,
+      subject: "Login Verification Code",
+      html: `<h2>Your Login OTP is ${otp}</h2><p>Security Alert: Your password was correct. Use this code to finish login.</p>`,
+    });
+
+    res.status(200).json({
+      mfaRequired: true,
+      email: user.email,
+      message: "Password correct! Please enter the OTP sent to your email."
+    });
+
+  } catch (error) {
+    console.error("Login Error:", error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+// ---------------------- VERIFY LOGIN OTP (Stage 2: Final Login) ----------------------
+export const verifyLoginOTP = async (req, res) => {
+  try {
+    const { email, code } = req.body;
+
+    const user = await User.findOne({
+      email,
+      loginCode: code,
+      loginCodeExpire: { $gt: Date.now() },
+    });
+
+    if (!user) return res.status(400).json({ message: "Invalid or expired OTP" });
+
+    user.loginCode = undefined;
+    user.loginCodeExpire = undefined;
+    user.failedLoginAttempts = 0;
+    await user.save();
+
+    const token = await genToken(user._id);
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      domain: ".oriviyan.com",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    const { password: userPass, ...userDetails } = user._doc;
+    await logActivity(req, "LOGIN_SUCCESS", `Logged in with 2FA: ${user.email}`, user);
+
+    res.status(200).json(userDetails);
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // 2️⃣ Controller me check add karo
 export const createUser = async (req, res) => {
   try {
@@ -859,7 +895,7 @@ export const createUser = async (req, res) => {
 
     await logActivity(req, "CREATE_USER", `Created user: ${username} (${userType})`);
     // 📧 Send account created email
-const loginUrl = "https://inventory-system-f.onrender.com/"; // apna frontend URL
+const loginUrl = "https://inventory.oriviyan.com/"; // apna frontend URL
 
 await sendEmail({
   to: email,
