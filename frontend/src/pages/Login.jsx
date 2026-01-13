@@ -328,10 +328,20 @@ export default function Login() {
     setError("");
 
     try {
-      const result = await api.post("/auth/signin", {
-        identifier: fullEmail,
-        password: form.password,
-      });
+      const result = await axios.post("/auth/signin",
+  {
+    identifier: fullEmail,
+    password: form.password,
+  },
+  {
+    withCredentials: true, // ✅ Ye must hai cookie ke liye
+  }
+);
+
+      // const result = await api.post("/auth/signin", {
+      //   identifier: fullEmail,
+      //   password: form.password,
+      // });
 
       if (result.data.mfaRequired) {
         setEmailForOTP(result.data.email);
