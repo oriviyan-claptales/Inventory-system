@@ -21,7 +21,8 @@ const MONGO_URL =
   process.env.MONGO_URI;
 
 app.use(cors({
-  origin: "https://inventory-system-f.onrender.com",
+  // origin: "https://inventory-system-f.onrender.com",
+  origin: "https://inventory.oriviyan.com",
   credentials: true
 }));
 
