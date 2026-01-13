@@ -1109,14 +1109,23 @@ export const verifyLoginOTP = async (req, res) => {
     await user.save();
 
     // ✅ Generate token & set cookie
-    const token = await genToken(user._id);
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // Production me true
-      sameSite: "none",                               // Browser ke liye fixed
-      domain: ".oriviyan.com",                        // Cookie domain fix
-      maxAge: 7 * 24 * 60 * 60 * 1000,               // 7 days
-    });
+    // const token = await genToken(user._id);
+    // res.cookie("token", token, {
+    //   httpOnly: true,
+    //   secure: process.env.NODE_ENV === "production", // Production me true
+    //   sameSite: "none",                               // Browser ke liye fixed
+    //   domain: ".oriviyan.com",                        // Cookie domain fix
+    //   maxAge: 7 * 24 * 60 * 60 * 1000,               // 7 days
+    // });
+
+const token = await genToken(user._id);
+res.cookie("token", token, {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production", // prod me https required
+  sameSite: "lax",   // cross-domain friendly, dev + prod dono me kaam kare
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+});
+
 
     const { password: userPass, ...userDetails } = user._doc;
 
@@ -1223,7 +1232,6 @@ export const signOut = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "none",
-      domain: ".oriviyan.com",
     });
 
     return res.status(200).json({ success: true, message: "Logout successful" });
