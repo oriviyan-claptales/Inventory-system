@@ -838,7 +838,7 @@ function ProductForm({ onSubmit, initialData, onCancel }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name === "name" || name === "Supplier_name") {
+    if (name === "Supplier_name") {
       if (value === "") {
         setFormData({ ...formData, [name]: value });
         return;
