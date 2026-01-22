@@ -877,7 +877,7 @@ function ProductForm({ onSubmit, initialData, onCancel }) {
     try {
       const imgData = new FormData();
       imgData.append("image", file);
-      const res = await axios.post("http://localhost:7000/api/products/upload", imgData, {
+      const res = await axios.post("https://inventory-system-uvj3.onrender.com/api/products/upload", imgData, {
         headers: { "Content-Type": "multipart/form-data" },
         withCredentials: true,
       });
