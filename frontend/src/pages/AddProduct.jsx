@@ -275,7 +275,8 @@
 
 
 import React from "react";
-import axios from "axios";
+// import axios from "axios";
+import api from "../api/axios";
 import ProductForm from "../components/ProductForm";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -285,32 +286,30 @@ export default function AddProduct() {
   const navigate = useNavigate();
 
   const saveProduct = async (data) => {
-    const toastId = toast.loading("Saving Product...");
+  const toastId = toast.loading("Saving Product...");
 
-    try {
-      const res = await axios.post("https://inventory-system-uvj3.onrender.com/api/products", data, {
-        withCredentials: true,
-      });
+  try {
+    const res = await api.post("/products", data);
 
-      if (res.status === 201) {
-        const newSku = res.data.sku;
+    if (res.status === 201) {
+      const newSku = res.data.sku;
 
-        toast.success("Product Added Successfully!", {
-          id: toastId,
-          duration: 3000,
-        });
-
-        setTimeout(() => {
-          navigate(`/generate-barcode/${newSku}`);
-        }, 1500);
-      }
-    } catch (err) {
-      console.error("Add Product Error:", err);
-      toast.error(err.response?.data?.message || "Failed to add product", {
+      toast.success("Product Added Successfully!", {
         id: toastId,
+        duration: 3000,
       });
+
+      setTimeout(() => {
+        navigate(`/generate-barcode/${newSku}`);
+      }, 1500);
     }
-  };
+  } catch (err) {
+    console.error("Add Product Error:", err);
+    toast.error(err.response?.data?.message || "Failed to add product", {
+      id: toastId,
+    });
+  }
+};
 
   return (
     // 1️⃣ Outer Container (Full Layout)
