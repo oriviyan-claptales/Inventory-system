@@ -367,7 +367,7 @@ function ProductList({ products, onEdit, onDelete }) { // onEdit/onDelete props 
                 <th style={styles.th}>Color</th>
                 <th style={styles.th}>SKU</th>
                 <th style={styles.th}>Cat.</th>
-                <th style={styles.th}>Price</th>
+                <th style={styles.th}>MRP</th>
                 <th style={styles.th}>Qty</th>
                 <th style={styles.th}>Action</th>
               </tr>
