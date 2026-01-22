@@ -688,7 +688,7 @@ const ProductDetails = () => {
                 <span style={styles.sku}>SKU: {product.sku}</span>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <div style={styles.price}>₹{product.price}</div>
+                <div style={styles.price}> MRP₹{product.price}</div>
               </div>
             </div>
             <hr style={styles.divider} />
