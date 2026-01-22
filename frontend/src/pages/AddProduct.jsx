@@ -288,7 +288,7 @@ export default function AddProduct() {
     const toastId = toast.loading("Saving Product...");
 
     try {
-      const res = await axios.post("http://localhost:7000/api/products", data, {
+      const res = await axios.post("https://inventory-system-uvj3.onrender.com/api/products", data, {
         withCredentials: true,
       });
 
