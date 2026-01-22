@@ -364,6 +364,7 @@ function ProductList({ products, onEdit, onDelete }) { // onEdit/onDelete props 
                 <th style={styles.th}>S no.</th>
                 <th style={styles.th}>Img</th>
                 <th style={styles.th}>Name</th>
+                <th style={styles.th}>Color</th>
                 <th style={styles.th}>SKU</th>
                 <th style={styles.th}>Cat.</th>
                 <th style={styles.th}>Price</th>
@@ -395,6 +396,7 @@ function ProductList({ products, onEdit, onDelete }) { // onEdit/onDelete props 
                       {product.name}
                     </b>
                   </td>
+                  <td style={{...styles.td, fontSize: "12px", color: "#555"}}>{product.color}</td>
 
                   <td style={{...styles.td, fontSize: "12px", color: "#555"}}>{product.sku}</td>
                   <td style={styles.td}>{product.category}</td>
