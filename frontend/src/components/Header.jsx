@@ -258,7 +258,7 @@ const Header = () => {
     <>
       <header style={styles.header}>
         <div style={styles.logoArea} onClick={() => navigate("/dashboard")}>
-          <h3 style={styles.appTitle}>📦 InventoryHub</h3>
+          <h3 style={styles.appTitle}>Inventory Hub</h3>
         </div>
 
         <div style={styles.userArea} ref={dropdownRef}>
