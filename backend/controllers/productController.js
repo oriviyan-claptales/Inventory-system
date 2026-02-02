@@ -318,12 +318,10 @@
 
 
 
-
 import Product from "../models/Product.js";
-import { generateSKU } from "../utils/skuGenerator.js"; // Example path
-import { generateAndUploadBarcode } from "../utils/barcode.js"; // Example path
-import { logActivity } from "./activityController.js"; // Example path
-
+import { generateSKU } from "../utils/skuGenerator.js";
+import { generateAndUploadBarcode } from "../utils/barcodeGenerator.js";
+import { logActivity } from "../utils/logger.js";
 export const importProducts = async (req, res) => {
   try {
     const productsData = req.body;
