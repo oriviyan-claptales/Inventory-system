@@ -319,7 +319,10 @@
 
 
 
-
+import Product from "../models/Product.js";
+import { generateSKU } from "../utils/skuGenerator.js"; // Example path
+import { generateAndUploadBarcode } from "../utils/barcode.js"; // Example path
+import { logActivity } from "./activityController.js"; // Example path
 
 export const importProducts = async (req, res) => {
   try {
