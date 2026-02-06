@@ -46,6 +46,11 @@ app.use("/api/logs", logRoutes);
 
 app.get("/", (req, res) => res.send("Server running successfully"));
 
+// HEALTH CHECK ROUTE
+app.get("/health", (req, res) => {
+  res.status(200).send("OK");
+});
+
 app.listen(PORT, () => {
   connectDB();
   console.log(`🚀 Server started on port ${PORT}`);
