@@ -1287,7 +1287,7 @@ export default function Login() {
     <div style={styles.container}>
       <div style={styles.card}>
         <div style={styles.header}>
-          <h2 style={styles.title}>InventoryHub</h2>
+          <h2 style={styles.title}>Inventory Hub</h2>
           <p style={styles.subtitle}>
             {stage === 1
               ? "Sign in to your account"
