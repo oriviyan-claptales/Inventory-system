@@ -1,7 +1,4 @@
 
-
-
-
 // // // import { useState, useEffect } from "react";
 // // // import api from "../api/axios";
 // // // import { useNavigate } from "react-router-dom";
@@ -1304,7 +1301,7 @@ export default function Login() {
               <div style={styles.emailWrapper}>
                 <input
                   type="text"
-                  placeholder="username"
+                  placeholder="Enter the Email"
                   value={emailPrefix}
                   onChange={(e) => setEmailPrefix(e.target.value.toLowerCase())}
                   required
