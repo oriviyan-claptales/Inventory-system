@@ -1785,7 +1785,6 @@ export default function UserManagement() {
                   <tr key={u._id} style={styles.row}>
                     <td style={styles.td}>
                       <div style={{ fontWeight: "600" }}>{u.name}</div>
-                      <div style={{ fontSize: "12px", color: "#64748b" }}>@{u.username}</div>
                     </td>
                     <td style={styles.td}>
                       <span style={{ ...styles.roleBadge, background: u.userType === "admin" ? "#e0f2fe" : "#f1f5f9", color: u.userType === "admin" ? "#0284c7" : "#475569" }}>
