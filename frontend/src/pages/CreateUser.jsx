@@ -494,7 +494,8 @@ export default function CreateUser() {
       // ⚠️ Backend ko 'confirmPassword' nahi bhejna, isliye usse hata rahe hain
       const { confirmPassword, ...payload } = form;
 
-      await axios.post("https://inventory-system-uvj3.onrender.com/auth/create-user", payload, {
+      await axios.post("https://inventory-system-uvj3.onrender.com/api/auth/create-user", payload, {
+        
         withCredentials: true,
       });
 
