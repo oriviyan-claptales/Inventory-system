@@ -1607,7 +1607,7 @@ const isCompanyEmail = (email) => {
 // 2️⃣ Controller me check add karo
 export const createUser = async (req, res) => {
   try {
-    const { name, email, password, userType, username } = req.body;
+    const { name, email, password, userType } = req.body;
 
     if (!name || !email || !password || !userType) {
       return res.status(400).json({ message: "All fields are required (including Username)" });
