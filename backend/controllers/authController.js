@@ -1204,7 +1204,6 @@ export const createUser = async (req, res) => {
               Login to Inventory
             </a>
           </p>
-          <p><b>Username:</b> ${username}</p>
           <p><b>Email:</b> ${email}</p>
           <p><b>Password:</b> ${password}</p>
           <p style="color:red">Please change your password after first login.</p>
