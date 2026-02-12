@@ -11,7 +11,7 @@ export default function CreateUser() {
 
   // States
   const [form, setForm] = useState({
-    username: "",
+    // username: "",
     name: "",
     email: "",
     password: "",
@@ -134,7 +134,7 @@ export default function CreateUser() {
         <form onSubmit={handleSubmit}>
           
           {/* Username Input */}
-          <div style={styles.inputGroup}>
+          {/* <div style={styles.inputGroup}>
             <label style={styles.label}>UserName<span style={styles.requiredStar}>*</span></label>
             <input
               type="text"
@@ -145,7 +145,7 @@ export default function CreateUser() {
               required
               style={styles.input}
             />
-          </div>
+          </div> */}
 
           {/* Name Input */}
           <div style={styles.inputGroup}>
