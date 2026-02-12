@@ -495,7 +495,6 @@ export default function CreateUser() {
       const { confirmPassword, ...payload } = form;
 
       await axios.post("https://inventory-system-uvj3.onrender.com/api/auth/create-user", payload, {
-        
         withCredentials: true,
       });
 
