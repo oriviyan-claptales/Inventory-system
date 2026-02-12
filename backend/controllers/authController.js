@@ -1640,7 +1640,7 @@ export const createUser = async (req, res) => {
       userType,
     });
 
-    await logActivity(req, "CREATE_USER", `Created user: ${username} (${userType})`);
+    await logActivity(req, "CREATE_USER", `Created user: ${name} (${userType})`);
     // 📧 Send account created email
 const loginUrl = "https://inventory-system-f.onrender.com/"; // apna frontend URL
 
