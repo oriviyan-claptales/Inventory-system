@@ -1961,16 +1961,6 @@ export default function UserManagement() {
                   placeholder="Name" 
               />
               
-              {/* Username (With Validation) */}
-              <input 
-                  name="username" 
-                  value={editForm.username} 
-                  onChange={handleEditChange} 
-                  style={styles.input} 
-                  required 
-                  placeholder="Username" 
-              />
-              
               {/* Email */}
               <input 
                   name="email" 
