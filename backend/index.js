@@ -17,9 +17,6 @@ dotenv.config();
 
 const app = express();
 
-// Shopify OAuth
-app.use("/shopify", shopifyRoutes);
-
 const PORT = process.env.PORT || 7000;
 
 const MONGO_URL =
@@ -50,6 +47,10 @@ app.use("/api/password", passwordRoutes);
 app.use("/api/logs", logRoutes);
 
 app.get("/", (req, res) => res.send("Server running successfully"));
+
+
+// Shopify OAuth
+app.use("/api/shopify", shopifyRoutes);
 
 // HEALTH CHECK ROUTE
 app.get("/health", (req, res) => {
