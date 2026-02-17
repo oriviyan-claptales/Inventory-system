@@ -179,7 +179,7 @@ export default function Graphs() {
   const fetchData = async () => {
     try {
       // Agar aapke paas 'api' instance hai to use use karein, warna axios theek hai
-      const res = await axios.get("http://localhost:7000/api/products", {
+      const res = await axios.get("https://inventory-system-uvj3.onrender.com/api/products", {
          withCredentials: true 
       });
       setProducts(res.data);
