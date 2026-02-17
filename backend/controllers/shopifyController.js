@@ -179,6 +179,11 @@ export const shopifyCallback = async (req, res) => {
   } catch (err) {
     console.error(err.response?.data || err.message);
     res.status(500).send("Error fetching access token");
+  console.log("STATUS:", err.response?.status);
+  console.log("DATA:", err.response?.data);
+  console.log("MESSAGE:", err.message);
+  res.status(500).send("Error fetching access token");
+
   }
 };
 
