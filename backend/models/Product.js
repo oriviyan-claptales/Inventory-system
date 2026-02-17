@@ -81,6 +81,7 @@ const ProductSchema = new mongoose.Schema({
 
   Supplier_name: { type: String, required: true },
   Qty: { type: Number, default: 0 },
+  shop: String,
 
 }, { timestamps: true });
 
