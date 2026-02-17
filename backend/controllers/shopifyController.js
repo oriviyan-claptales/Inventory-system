@@ -137,11 +137,14 @@ export const shopifyAuth = (req, res) => {
   const shop = req.query.shop;
   if (!shop) return res.status(400).send("Missing shop parameter");
 
-  const redirectUri = `${process.env.BACKEND_URL}/shopify/auth/callback`;
+  // const redirectUri = `${process.env.BACKEND_URL}/shopify/auth/callback`;
+  const redirectUri = `${process.env.BACKEND_URL}/api/shopify/auth/callback`;
+
   const scopes =
     "read_products,write_products,read_inventory,write_inventory,read_locations";
 
   const installUrl = `https://${shop}/admin/oauth/authorize?client_id=${CLIENT_ID}&scope=${scopes}&redirect_uri=${redirectUri}&state=nonce123`;
+   
 
   res.redirect(installUrl);
 };
