@@ -149,10 +149,49 @@ export const shopifyAuth = (req, res) => {
   res.redirect(installUrl);
 };
 
+// export const shopifyCallback = async (req, res) => {
+//   const { shop, code } = req.query;
+//   if (!shop || !code)
+//     return res.status(400).send("Missing shop or code");
+
+//   try {
+//     const response = await axios.post(
+//       `https://${shop}/admin/oauth/access_token`,
+//       {
+//         client_id: CLIENT_ID,
+//         client_secret: CLIENT_SECRET,
+//         code,
+//       }
+//     );
+
+//     const accessToken = response.data.access_token;
+
+//     // ✅ SAVE TOKEN IN DB
+//     await ShopifyTokenModel.findOneAndUpdate(
+//       { shop },
+//       { shop, accessToken },
+//       { upsert: true, new: true }
+//     );
+
+//     console.log("✅ Shopify Token Saved");
+
+//     res.send("Shopify app installed successfully!");
+//   } catch (err) {
+//     console.error(err.response?.data || err.message);
+//     res.status(500).send("Error fetching access token");
+//   console.log("STATUS:", err.response?.status);
+//   console.log("DATA:", err.response?.data);
+//   console.log("MESSAGE:", err.message);
+//   res.status(500).send("Error fetching access token");
+
+//   }
+// };
 export const shopifyCallback = async (req, res) => {
   const { shop, code } = req.query;
-  if (!shop || !code)
+
+  if (!shop || !code) {
     return res.status(400).send("Missing shop or code");
+  }
 
   try {
     const response = await axios.post(
@@ -166,7 +205,6 @@ export const shopifyCallback = async (req, res) => {
 
     const accessToken = response.data.access_token;
 
-    // ✅ SAVE TOKEN IN DB
     await ShopifyTokenModel.findOneAndUpdate(
       { shop },
       { shop, accessToken },
@@ -175,17 +213,16 @@ export const shopifyCallback = async (req, res) => {
 
     console.log("✅ Shopify Token Saved");
 
-    res.send("Shopify app installed successfully!");
+    return res.send("Shopify app installed successfully!");
   } catch (err) {
-    console.error(err.response?.data || err.message);
-    res.status(500).send("Error fetching access token");
-  console.log("STATUS:", err.response?.status);
-  console.log("DATA:", err.response?.data);
-  console.log("MESSAGE:", err.message);
-  res.status(500).send("Error fetching access token");
+    console.log("STATUS:", err.response?.status);
+    console.log("DATA:", err.response?.data);
+    console.log("MESSAGE:", err.message);
 
+    return res.status(500).send("Error fetching access token");
   }
 };
+
 
 /* ===========================
    AUTO INVENTORY SYNC
