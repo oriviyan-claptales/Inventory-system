@@ -9,12 +9,17 @@ import authRoutes from "./routes/auth.js";   // ✅ ADD
 import passwordRoutes from "./routes/password.routes.js";
 import cookieParser from "cookie-parser"; // 👈 Add this import
 import logRoutes from "./routes/logRoutes.js";
+import shopifyRoutes from "./routes/shopifyRoutes.js";
 
 
 
 dotenv.config();
 
 const app = express();
+
+// Shopify OAuth
+app.use("/shopify", shopifyRoutes);
+
 const PORT = process.env.PORT || 7000;
 
 const MONGO_URL =
