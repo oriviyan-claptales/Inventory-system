@@ -519,7 +519,67 @@ export const getProductBySKU = async (req, res) => {
 };
 
 
-// Update product quantity by SKU (ADD or REMOVE)
+// // Update product quantity by SKU (ADD or REMOVE)
+// export const updateQtyBySKU = async (req, res) => {
+//   try {
+//     const { sku, addedQty, removeQty } = req.body;
+
+//     if (!sku) {
+//       return res.status(400).json({ message: "SKU is required" });
+//     }
+
+//     const product = await Product.findOne({ sku });
+//     if (!product) {
+//       return res.status(404).json({ message: "Product not found with this SKU" });
+//     }
+
+//     // ADD QTY
+//     if (addedQty != null) {
+//       const add = Number(addedQty);
+//       if (isNaN(add) || add <= 0) {
+//         return res.status(400).json({ message: "Invalid quantity to add" });
+//       }
+
+//       product.Qty += add;
+//     }
+
+//     // REMOVE QTY
+//     if (removeQty != null) {
+//       const remove = Number(removeQty);
+//       if (isNaN(remove) || remove <= 0) {
+//         return res.status(400).json({ message: "Invalid quantity to remove" });
+//       }
+
+//       if (remove > product.Qty) {
+//         return res
+//           .status(400)
+//           .json({ message: "Remove quantity cannot be greater than current stock" });
+//       }
+
+//       product.Qty -= remove;
+//     }
+
+//     await product.save();
+
+
+//     // 👇 LOG
+//     const actionType = addedQty ? "STOCK_ADD" : "STOCK_REMOVE";
+//     const qtyChange = addedQty || removeQty;
+//     await logActivity(req, actionType, `SKU: ${sku}, Qty: ${qtyChange}`);
+
+
+//     res.json(product);
+//   } catch (error) {
+//     console.error("Qty Update Error:", error);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// };
+
+
+
+import axios from "axios";
+import ShopifyTokenModel from "../models/ShopifyToken.js";
+
 export const updateQtyBySKU = async (req, res) => {
   try {
     const { sku, addedQty, removeQty } = req.body;
@@ -533,17 +593,14 @@ export const updateQtyBySKU = async (req, res) => {
       return res.status(404).json({ message: "Product not found with this SKU" });
     }
 
-    // ADD QTY
     if (addedQty != null) {
       const add = Number(addedQty);
       if (isNaN(add) || add <= 0) {
         return res.status(400).json({ message: "Invalid quantity to add" });
       }
-
       product.Qty += add;
     }
 
-    // REMOVE QTY
     if (removeQty != null) {
       const remove = Number(removeQty);
       if (isNaN(remove) || remove <= 0) {
@@ -551,9 +608,9 @@ export const updateQtyBySKU = async (req, res) => {
       }
 
       if (remove > product.Qty) {
-        return res
-          .status(400)
-          .json({ message: "Remove quantity cannot be greater than current stock" });
+        return res.status(400).json({
+          message: "Remove quantity cannot be greater than current stock",
+        });
       }
 
       product.Qty -= remove;
@@ -561,16 +618,60 @@ export const updateQtyBySKU = async (req, res) => {
 
     await product.save();
 
+    // 🔥 ===============================
+    // 🔥 AUTO SHOPIFY SYNC START
+    // 🔥 ===============================
 
-    // 👇 LOG
-    const actionType = addedQty ? "STOCK_ADD" : "STOCK_REMOVE";
-    const qtyChange = addedQty || removeQty;
-    await logActivity(req, actionType, `SKU: ${sku}, Qty: ${qtyChange}`);
+    const shopData = await ShopifyTokenModel.findOne();
+    if (!shopData) {
+      console.log("Shopify token not found");
+      return res.json(product);
+    }
 
+    const accessToken = shopData.accessToken;
+    const shopName = shopData.shop;
+
+    // Find Shopify variant by SKU
+    const shopifyResp = await axios.get(
+      `https://${shopName}/admin/api/2026-01/variants.json?sku=${sku}`,
+      {
+        headers: {
+          "X-Shopify-Access-Token": accessToken,
+        },
+      }
+    );
+
+    const variant = shopifyResp.data.variants[0];
+    if (!variant) {
+      console.log("Shopify product not found");
+      return res.json(product);
+    }
+
+    const inventoryItemId = variant.inventory_item_id;
+
+    await axios.post(
+      `https://${shopName}/admin/api/2026-01/inventory_levels/set.json`,
+      {
+        location_id: process.env.SHOPIFY_LOCATION_ID,
+        inventory_item_id: inventoryItemId,
+        available: product.Qty,
+      },
+      {
+        headers: {
+          "X-Shopify-Access-Token": accessToken,
+        },
+      }
+    );
+
+    console.log("✅ Shopify Inventory Synced");
+
+    // 🔥 ===============================
+    // 🔥 AUTO SHOPIFY SYNC END
+    // 🔥 ===============================
 
     res.json(product);
   } catch (error) {
-    console.error("Qty Update Error:", error);
+    console.error("Qty Update Error:", error.response?.data || error.message);
     res.status(500).json({ message: "Server error" });
   }
 };
