@@ -56,6 +56,7 @@ app.use("/api/shopify", shopifyRoutes);
 app.get("/health", (req, res) => {
   res.status(200).send("OK");
 });
+app.set("trust proxy", 1);
 
 app.listen(PORT, () => {
   connectDB();
