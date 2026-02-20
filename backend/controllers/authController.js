@@ -1264,19 +1264,6 @@
 
 
 
-import User from "../models/User.js";
-import genToken from "../utils/generateToken.js";
-import bcrypt from "bcryptjs";
-import { logActivity } from "../utils/logger.js";
-import Log from "../models/Log.js";
-import sendEmail from "../utils/sendEmail.js";
-
-
-
-// Check Auth (Protected)
-export const checkAuth = (req, res) => {
-  res.status(200).json({ success: true, userId: req.user });
-};
 
 // import LoginHistory from "../models/LoginHistory.js";
 
@@ -1348,6 +1335,21 @@ export const checkAuth = (req, res) => {
 //   }
 // };
 
+
+
+import User from "../models/User.js";
+import genToken from "../utils/generateToken.js";
+import bcrypt from "bcryptjs";
+import { logActivity } from "../utils/logger.js";
+import Log from "../models/Log.js";
+import sendEmail from "../utils/sendEmail.js";
+
+
+
+// Check Auth (Protected)
+export const checkAuth = (req, res) => {
+  res.status(200).json({ success: true, userId: req.user });
+};
 
 export const signIn = async (req, res) => {
   try {
@@ -1442,12 +1444,19 @@ export const verifyLoginOTP = async (req, res) => {
     await user.save();
 
     const token = await genToken(user._id);
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    // res.cookie("token", token, {
+    //   httpOnly: true,
+    //   secure: process.env.NODE_ENV === "production",
+    //   sameSite: "strict",
+    //   maxAge: 7 * 24 * 60 * 60 * 1000,
+    // });
+res.cookie("token", token, {
+  httpOnly: true,
+  secure: true,          // production me always true
+  sameSite: "none",      // 🔥 important
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+});
+
 
     const { password: userPass, ...userDetails } = user._doc;
     
