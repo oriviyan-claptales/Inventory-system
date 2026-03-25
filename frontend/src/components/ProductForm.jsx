@@ -67,7 +67,7 @@
 
 
 //       const res = await axios.post(
-//         "http://localhost:7000/api/products/upload",
+//         "https://inventory-system-uvj3.onrender.com/api/products/upload",
 //         imgData,
 //         {
 //           headers: {
@@ -413,7 +413,7 @@
 //       imgData.append("image", file);
 
 //       const res = await axios.post(
-//         "http://localhost:7000/api/products/upload",
+//         "https://inventory-system-uvj3.onrender.com/api/products/upload",
 //         imgData,
 //         {
 //           headers: { "Content-Type": "multipart/form-data" },
@@ -824,7 +824,7 @@
 //     try {
 //       const imgData = new FormData();
 //       imgData.append("image", file);
-//       const res = await axios.post("http://localhost:7000/api/products/upload", imgData, {
+//       const res = await axios.post("https://inventory-system-uvj3.onrender.com/api/products/upload", imgData, {
 //         headers: { "Content-Type": "multipart/form-data" },
 //         withCredentials: true,
 //       });
@@ -1139,7 +1139,7 @@
 //     try {
 //       const imgData = new FormData();
 //       imgData.append("image", file);
-//       const res = await axios.post("http://localhost:7000/api/products/upload", imgData, {
+//       const res = await axios.post("https://inventory-system-uvj3.onrender.com/api/products/upload", imgData, {
 //         headers: { "Content-Type": "multipart/form-data" },
 //         withCredentials: true,
 //       });
@@ -1443,7 +1443,7 @@
 //     try {
 //       const imgData = new FormData();
 //       imgData.append("image", file);
-//       const res = await axios.post("http://localhost:7000/api/products/upload", imgData, {
+//       const res = await axios.post("https://inventory-system-uvj3.onrender.com/api/products/upload", imgData, {
 //         headers: { "Content-Type": "multipart/form-data" },
 //         withCredentials: true,
 //       });
@@ -1774,7 +1774,7 @@
 //     try {
 //       const imgData = new FormData();
 //       imgData.append("image", file);
-//       const res = await axios.post("http://localhost:7000/api/products/upload", imgData, {
+//       const res = await axios.post("https://inventory-system-uvj3.onrender.com/api/products/upload", imgData, {
 //         headers: { "Content-Type": "multipart/form-data" },
 //         withCredentials: true,
 //       });
@@ -2159,7 +2159,7 @@ function ProductForm({ onSubmit, initialData, onCancel }) {
   useEffect(() => {
     const fetchPackZoneItems = async () => {
       try {
-        const res = await axios.get("http://localhost:7000/api/packzone", { withCredentials: true });
+        const res = await axios.get("https://inventory-system-uvj3.onrender.com/api/packzone", { withCredentials: true });
         setPackZoneItems(res.data.items || res.data || []);
       } catch (error) {
         console.error("Failed to fetch PackZone items", error);
@@ -2185,7 +2185,7 @@ function ProductForm({ onSubmit, initialData, onCancel }) {
     const fetchPackZoneItems = async () => {
       try {
         // Apne backend URL ke hisab se isko adjust kar lena agar zaroorat ho
-        const res = await axios.get("http://localhost:7000/api/packzone", { withCredentials: true });
+        const res = await axios.get("https://inventory-system-uvj3.onrender.com/api/packzone", { withCredentials: true });
         // API response ke basis par items set karein (Maan lijiye res.data.items me array hai)
         setPackZoneItems(res.data.items || res.data || []);
       } catch (error) {
@@ -2257,7 +2257,7 @@ function ProductForm({ onSubmit, initialData, onCancel }) {
     try {
       const imgData = new FormData();
       imgData.append("image", file);
-      const res = await axios.post("http://localhost:7000/api/products/upload", imgData, {
+      const res = await axios.post("https://inventory-system-uvj3.onrender.com/api/products/upload", imgData, {
         headers: { "Content-Type": "multipart/form-data" },
         withCredentials: true,
       });
