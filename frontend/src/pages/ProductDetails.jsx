@@ -11,7 +11,7 @@
 //   useEffect(() => {
 //     const fetchProduct = async () => {
 //       try {
-//         const res = await axios.get(`http://localhost:7000/api/products/${id}`);
+//         const res = await axios.get(`https://inventory-system-uvj3.onrender.com/api/products/${id}`);
 //         setProduct(res.data);
 //         setLoading(false);
 //       } catch (error) {
@@ -149,7 +149,7 @@
 //   useEffect(() => {
 //     const fetchProduct = async () => {
 //       try {
-//         const res = await api.get(`http://localhost:7000/api/products/${id}`);
+//         const res = await api.get(`https://inventory-system-uvj3.onrender.com/api/products/${id}`);
 //         setProduct(res.data);
 //         setLoading(false);
 //       } catch (error) {
@@ -165,7 +165,7 @@
 //   const handleDelete = async () => {
 //     if (window.confirm("Are you sure you want to PERMANENTLY delete this product?")) {
 //       try {
-//         await api.delete(`http://localhost:7000/api/products/${id}`);
+//         await api.delete(`https://inventory-system-uvj3.onrender.com/api/products/${id}`);
 //         toast.success("Product Deleted Successfully");
 //         navigate("/dashboard");
 //       } catch (error) {
@@ -3390,7 +3390,7 @@
 //       imgData.append("image", file);
 
 //       // Upload Call
-//       const res = await axios.post("http://localhost:7000/api/products/upload", imgData, {
+//       const res = await axios.post("https://inventory-system-uvj3.onrender.com/api/products/upload", imgData, {
 //         headers: { "Content-Type": "multipart/form-data" },
 //         withCredentials: true,
 //       });
@@ -3952,7 +3952,7 @@
 //       const imgData = new FormData();
 //       imgData.append("image", file);
 
-//       const res = await axios.post("http://localhost:7000/api/products/upload", imgData, {
+//       const res = await axios.post("https://inventory-system-uvj3.onrender.com/api/products/upload", imgData, {
 //         headers: { "Content-Type": "multipart/form-data" },
 //         withCredentials: true,
 //       });
@@ -4556,7 +4556,7 @@
 //       const imgData = new FormData();
 //       imgData.append("image", file);
 
-//       const res = await axios.post("http://localhost:7000/api/products/upload", imgData, {
+//       const res = await axios.post("https://inventory-system-uvj3.onrender.com/api/products/upload", imgData, {
 //         headers: { "Content-Type": "multipart/form-data" },
 //         withCredentials: true,
 //       });
@@ -5353,7 +5353,7 @@
 //   useEffect(() => {
 //     const fetchPackZoneItems = async () => {
 //       try {
-//         const res = await axios.get("http://localhost:7000/api/packzone", { withCredentials: true });
+//         const res = await axios.get("https://inventory-system-uvj3.onrender.com/api/packzone", { withCredentials: true });
 //         setPackZoneItems(res.data.items || res.data || []);
 //       } catch (error) {
 //         console.error("Failed to fetch PackZone items", error);
@@ -5448,7 +5448,7 @@
 //     try {
 //       const imgData = new FormData();
 //       imgData.append("image", file);
-//       const res = await axios.post("http://localhost:7000/api/products/upload", imgData, {
+//       const res = await axios.post("https://inventory-system-uvj3.onrender.com/api/products/upload", imgData, {
 //         headers: { "Content-Type": "multipart/form-data" },
 //         withCredentials: true,
 //       });
@@ -6123,7 +6123,7 @@
 //   useEffect(() => {
 //     const fetchPackZoneItems = async () => {
 //       try {
-//         const res = await axios.get("http://localhost:7000/api/packzone", { withCredentials: true });
+//         const res = await axios.get("https://inventory-system-uvj3.onrender.com/api/packzone", { withCredentials: true });
 //         setPackZoneItems(res.data.items || res.data || []);
 //       } catch (error) {
 //         console.error("Failed to fetch PackZone items", error);
@@ -6221,7 +6221,7 @@
 //     try {
 //       const imgData = new FormData();
 //       imgData.append("image", file);
-//       const res = await axios.post("http://localhost:7000/api/products/upload", imgData, {
+//       const res = await axios.post("https://inventory-system-uvj3.onrender.com/api/products/upload", imgData, {
 //         headers: { "Content-Type": "multipart/form-data" },
 //         withCredentials: true,
 //       });
@@ -6881,7 +6881,7 @@ const ProductDetails = () => {
   useEffect(() => {
     const fetchPackZoneItems = async () => {
       try {
-        const res = await axios.get("http://localhost:7000/api/packzone", { withCredentials: true });
+        const res = await axios.get("https://inventory-system-uvj3.onrender.com/api/packzone", { withCredentials: true });
         setPackZoneItems(res.data.items || res.data || []);
       } catch (error) {
         console.error("Failed to fetch PackZone items", error);
@@ -6970,7 +6970,7 @@ const ProductDetails = () => {
     try {
       const imgData = new FormData();
       imgData.append("image", file);
-      const res = await axios.post("http://localhost:7000/api/products/upload", imgData, {
+      const res = await axios.post("https://inventory-system-uvj3.onrender.com/api/products/upload", imgData, {
         headers: { "Content-Type": "multipart/form-data" }, withCredentials: true,
       });
       setEditForm((prev) => ({ ...prev, img: res.data.url }));
