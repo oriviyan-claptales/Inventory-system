@@ -2,7 +2,7 @@ import axios from "axios";
 
 const api = axios.create({
   // baseURL: "http://localhost:7000/api",
-  baseURL: "https://inventory-system-uvj3.onrender.com",
+  baseURL: "https://inventory-system-uvj3.onrender.com/api",
   withCredentials: true, // if cookies
 });
 
