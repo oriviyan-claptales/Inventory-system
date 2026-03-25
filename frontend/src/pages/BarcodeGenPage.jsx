@@ -15,7 +15,7 @@
 //       try {
 //         // Backend API call to generate and save barcode
 //         const res = await axios.post(
-//           `http://localhost:7000/api/products/generate-barcode/${sku}`,
+//           `https://inventory-system-uvj3.onrender.com/api/products/generate-barcode/${sku}`,
 //           {},
 //           { withCredentials: true }
 //         );
@@ -153,7 +153,7 @@ const BarcodeGenPage = () => {
     const generateBarcode = async () => {
       try {
         const res = await axios.post(
-          `http://localhost:7000/api/products/generate-barcode/${sku}`,
+          `https://inventory-system-uvj3.onrender.com/api/products/generate-barcode/${sku}`,
           {},
           { withCredentials: true }
         );
