@@ -245,13 +245,19 @@ const MONGO_URL =
   process.env.MONGO_URI;
 
 
-app.use(
-  cors({
-    // origin: "http://localhost:5173", // frontend exact URL
-    origin: "https://inventory.oriviyan.com", // frontend exact URL
-    credentials: true,               // cookies allow
-  })
-);
+// app.use(
+//   cors({
+//     // origin: "http://localhost:5173", // frontend exact URL
+//     origin: "https://inventory.oriviyan.com", // frontend exact URL
+//     credentials: true,               // cookies allow
+//   })
+// );
+
+
+app.use(cors({
+  origin: "https://inventory.oriviyan.com",
+  credentials: true
+}));
 
 app.use(cookieParser());
 app.use(express.json());
