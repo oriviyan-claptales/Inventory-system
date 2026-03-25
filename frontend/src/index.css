@@ -1,0 +1,23 @@
+/* 1. Import sabse upar hona zaroori hai */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  font-synthesis: none;
+  font-size: 16px; /* ERP system ke liye 16px best rehta hai, 18px thoda bada ho jata hai */
+}
+
+/* 2. Global Font Apply */
+* {
+  font-family: 'Inter', sans-serif !important;
+}
+
+/* 3. Body Default Styling */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f1f5f9; /* ERP ka premium light background */
+  color: #1e293b; /* Text color */
+}

@@ -1,0 +1,2527 @@
+// import React, { useState, useEffect } from "react";
+// import axios from "axios";
+
+// function ProductForm({ onSubmit, initialData, onCancel }) {
+//   const [sizeValue, setSizeValue] = useState("");
+//   const [sizeUnit, setSizeUnit] = useState("");
+
+//   const [formData, setFormData] = useState({
+//     name: "",
+//     description: "",
+//     category: "Die-cast",
+//     color: "Black",
+//     size: "",
+//     img: "",
+//     price: "",
+//     costing_price: "",
+//     Supplier_name: "",
+//     Qty: 0,
+//   });
+
+//   const [preview, setPreview] = useState("");
+//   const [uploading, setUploading] = useState(false);
+//   const [submitting, setSubmitting] = useState(false);
+
+//   // Prefill when editing product
+//   useEffect(() => {
+//     if (initialData) {
+//       setFormData({ ...initialData });
+
+//       // Split size like "30 cm"
+//       const parts = (initialData.size || "").split(" ");
+//       if (parts.length === 2) {
+//         setSizeValue(parts[0]);
+//         setSizeUnit(parts[1]);
+//       }
+//       setPreview(initialData.img || "");
+//     }
+//   }, [initialData]);
+
+//   // Reset size when category changes
+//   useEffect(() => {
+//     setFormData((prev) => ({ ...prev, size: "" }));
+//     setSizeValue("");
+//     setSizeUnit("");
+//   }, [formData.category]);
+
+//   // Normal fields update
+//   const handleChange = (e) => {
+//     setFormData({ ...formData, [e.target.name]: e.target.value });
+//   };
+
+//   // Image select + instant upload to Cloudinary
+//   const handleImageSelect = async (e) => {
+//     const file = e.target.files[0];
+//     if (!file) return;
+
+//     setUploading(true);
+
+//     // Show instant preview
+//     const reader = new FileReader();
+//     reader.onloadend = () => setPreview(reader.result);
+//     reader.readAsDataURL(file);
+
+//     try {
+//       const imgData = new FormData();
+//       imgData.append("image", file);
+
+
+//       const res = await axios.post(
+//         "http://localhost:7000/api/products/upload",
+//         imgData,
+//         {
+//           headers: {
+//             "Content-Type": "multipart/form-data",
+//           },
+//           withCredentials: true, // 👈 MOST IMPORTANT
+//         }
+//       );
+
+
+//       if (!res.data.url) throw new Error("Upload failed");
+
+//       setFormData((p) => ({ ...p, img: res.data.url }));
+//     } catch (err) {
+//       console.error("Upload Error:", err);
+//       alert("Image upload failed");
+//     }
+
+//     setUploading(false);
+//   };
+
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+
+//     if (!formData.img) {
+//       return alert("Please upload an image before submitting.");
+//     }
+
+//     let finalSize = "";
+
+//     // DIE-CAST / REMOTE CONTROL / SCOOTER
+//     if (
+//       formData.category === "Die-cast" ||
+//       formData.category === "Remote Control" ||
+//       formData.category === "Scooter"
+//     ) {
+//       if (!formData.size) {
+//         return alert("Please select a size.");
+//       }
+//       finalSize = formData.size;
+//     }
+
+//     // SOFT TOY / BOARD GAME
+//     if (formData.category === "Soft Toy" || formData.category === "Board Game") {
+//       if (!sizeValue || !sizeUnit) {
+//         return alert("Please enter size value AND select a unit.");
+//       }
+//       finalSize = `${sizeValue} ${sizeUnit}`;
+//     }
+
+//     const finalData = {
+//       ...formData,
+//       size: finalSize,
+//       price: Number(formData.price),
+//       costing_price: Number(formData.costing_price),
+//       gst: Number(formData.gst),
+//       Qty: Number(formData.Qty),
+//     };
+
+//     onSubmit(finalData);
+//   };
+
+
+
+
+//   useEffect(() => {
+//     if (formData.category === "Soft Toy" || formData.category === "Board Game") {
+//       if (sizeValue && sizeUnit) {
+//         setFormData((prev) => ({
+//           ...prev,
+//           size: `${sizeValue} ${sizeUnit}`,
+//         }));
+//       } else {
+//         setFormData((prev) => ({ ...prev, size: "" }));
+//       }
+//     }
+//   }, [sizeValue, sizeUnit, formData.category]);
+
+//   const inputStyle = {
+//     height: "35px",
+//     padding: "8px 10px",
+//     marginBottom: "15px",
+//     width: "100%",
+//     maxWidth: "400px",
+//     border: "1.5px solid #ccc",
+//     borderRadius: "8px",
+//   };
+
+//   const labelStyle = { fontWeight: "600", marginBottom: "5px", display: "block" };
+
+//   return (
+//     <form onSubmit={handleSubmit} style={{ marginBottom: "30px" }}>
+
+//       <label style={labelStyle}>Product Name:</label>
+//       <input name="name" value={formData.name} onChange={handleChange} style={inputStyle} required />
+
+//       <label style={labelStyle}>Description:</label>
+//       <textarea
+//         name="description"
+//         value={formData.description}
+//         onChange={handleChange}
+//         style={{ ...inputStyle, height: "80px" }}
+//       />
+
+//       <label style={labelStyle}>Category:</label>
+//       <select
+//         name="category"
+//         value={formData.category}
+//         onChange={handleChange}
+//         style={inputStyle}
+//       >
+//         <option value="Die-cast">Die-cast</option>
+//         <option value="Remote Control">Remote Control</option>
+//         <option value="Soft Toy">Soft Toy</option>
+//         <option value="Board Game">Board Game</option>
+//         <option value="Scooter">Scooter</option>
+//       </select>
+
+//       {/* Size Logic */}
+//       <label style={labelStyle}>Size:</label>
+
+//       {(formData.category === "Die-cast" || formData.category === "Remote Control") && (
+//         <select name="size" value={formData.size} onChange={handleChange} style={inputStyle}>
+//           <option value="1:12">1:12</option>
+//           <option value="1:19">1:19</option>
+//           <option value="1:20">1:20</option>
+//           <option value="1:24">1:24</option>
+//           <option value="1:32">1:32</option>
+//         </select>
+//       )}
+
+//       {formData.category === "Scooter" && (
+//         <select name="size" value={formData.size} onChange={handleChange} style={inputStyle}>
+//           <option value="S">S</option>
+//           <option value="M">M</option>
+//           <option value="L">L</option>
+//           <option value="XL">XL</option>
+//         </select>
+//       )}
+
+//       {(formData.category === "Soft Toy" || formData.category === "Board Game") && (
+//         <div style={{ display: "flex", gap: "10px" }}>
+//           <input
+//             type="number"
+//             placeholder="Enter size"
+//             value={sizeValue}
+//             onChange={(e) => setSizeValue(e.target.value)}
+//             style={{ ...inputStyle, width: "60%" }}
+//           />
+//           <select
+//             value={sizeUnit}
+//             onChange={(e) => setSizeUnit(e.target.value)}
+//             style={{ ...inputStyle, width: "40%" }}
+//           >
+//             <option value="">Unit</option>
+//             <option value="cm">cm</option>
+//             <option value="inch">inch</option>
+//           </select>
+//         </div>
+//       )}
+
+//       <label style={labelStyle}>Product Image:</label>
+//       <input
+//         type="file"
+//         accept="image/*"
+//         onChange={handleImageSelect}
+//         style={inputStyle}
+//         disabled={uploading}
+//       />
+//       {preview && (
+//         <img
+//           src={preview}
+//           width="140"
+//           style={{ borderRadius: "6px", marginTop: "10px" }}
+//         />
+//       )}
+//       {uploading && <p style={{ color: "orange" }}>Uploading...</p>}
+
+//       <label style={labelStyle}>Price:</label>
+//       <input
+//         name="price"
+//         type="number"
+//         value={formData.price}
+//         onChange={handleChange}
+//         required
+//         style={inputStyle}
+//       />
+//       <label style={labelStyle}>Cost Price (CP):</label>
+//       <input
+//         name="costing_price"
+//         type="number"
+//         value={formData.costing_price}
+//         onChange={handleChange}
+//         required
+//         style={inputStyle}
+//       />
+//       <label style={labelStyle}>GST:</label>
+//       <select
+//         name="gst"
+//         value={formData.gst || ""}
+//         onChange={handleChange}
+//         style={{ ...inputStyle, width: "100%" }}
+//         required
+//       >
+//         <option value="">GST %</option>
+//         <option value="0">0%</option>
+//         <option value="5">5%</option>
+//         <option value="12">12%</option>
+//         <option value="18">18%</option>
+//         <option value="28">28%</option>
+//       </select>
+
+
+//       <label style={labelStyle}>Supplier Name:</label>
+//       <input
+//         name="Supplier_name"
+//         value={formData.Supplier_name}
+//         onChange={handleChange}
+//         style={inputStyle}
+//         required
+//       />
+
+//       <label style={labelStyle}>Quantity (Qty):</label>
+//       <input
+//         name="Qty"
+//         type="number"
+//         min="0"
+//         value={formData.Qty}
+//         onChange={handleChange}
+//         style={inputStyle}
+//         required
+//       />
+
+//       <div style={{ marginTop: "20px" }}>
+//         <button
+//           type="submit"
+//           disabled={submitting}
+//           style={{
+//             padding: "10px 20px",
+//             background: submitting ? "gray" : "#1976D2",
+//             color: "#fff",
+//             borderRadius: "8px",
+//           }}
+//         >
+//           {submitting
+//             ? "Submitting..."
+//             : initialData
+//               ? "Update Product"
+//               : "Add Product & Generate SKU"}
+//         </button>
+
+//         {onCancel && (
+//           <button
+//             type="button"
+//             onClick={onCancel}
+//             style={{
+//               padding: "10px 20px",
+//               background: "#E53935",
+//               color: "#fff",
+//               borderRadius: "8px",
+//               marginLeft: 10,
+//             }}
+//           >
+//             Cancel
+//           </button>
+//         )}
+//       </div>
+//     </form>
+//   );
+// }
+
+// export default ProductForm;
+
+
+
+
+
+
+
+
+// import React, { useState, useEffect } from "react";
+// import axios from "axios";
+
+// function ProductForm({ onSubmit, initialData, onCancel }) {
+//   const [sizeValue, setSizeValue] = useState("");
+//   const [sizeUnit, setSizeUnit] = useState("");
+//   const [preview, setPreview] = useState("");
+//   const [uploading, setUploading] = useState(false);
+//   const [submitting, setSubmitting] = useState(false);
+
+//   const [formData, setFormData] = useState({
+//     name: "",
+//     description: "",
+//     category: "Die-cast",
+//     color: "Black",
+//     size: "",
+//     img: "",
+//     price: "",
+//     costing_price: "",
+//     Supplier_name: "",
+//     gst: "",
+//     Qty: 0,
+//   });
+
+//   // Prefill Data (Edit Mode)
+//   useEffect(() => {
+//     if (initialData) {
+//       setFormData({ ...initialData });
+//       const parts = (initialData.size || "").split(" ");
+//       if (parts.length === 2) {
+//         setSizeValue(parts[0]);
+//         setSizeUnit(parts[1]);
+//       }
+//       setPreview(initialData.img || "");
+//     }
+//   }, [initialData]);
+
+//   // Reset Size on Category Change
+//   useEffect(() => {
+//     setFormData((prev) => ({ ...prev, size: "" }));
+//     setSizeValue("");
+//     setSizeUnit("");
+//   }, [formData.category]);
+
+//   // Handle Input Changes
+//   const handleChange = (e) => {
+//     setFormData({ ...formData, [e.target.name]: e.target.value });
+//   };
+
+//   // Image Upload Logic
+//   const handleImageSelect = async (e) => {
+//     const file = e.target.files[0];
+//     if (!file) return;
+
+//     setUploading(true);
+//     const reader = new FileReader();
+//     reader.onloadend = () => setPreview(reader.result);
+//     reader.readAsDataURL(file);
+
+//     try {
+//       const imgData = new FormData();
+//       imgData.append("image", file);
+
+//       const res = await axios.post(
+//         "http://localhost:7000/api/products/upload",
+//         imgData,
+//         {
+//           headers: { "Content-Type": "multipart/form-data" },
+//           withCredentials: true,
+//         }
+//       );
+
+//       if (!res.data.url) throw new Error("Upload failed");
+//       setFormData((p) => ({ ...p, img: res.data.url }));
+//     } catch (err) {
+//       console.error("Upload Error:", err);
+//       alert("Image upload failed");
+//     }
+//     setUploading(false);
+//   };
+
+//   // Submit Logic
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     if (!formData.img) return alert("Please upload an image before submitting.");
+
+//     let finalSize = "";
+//     if (["Die-cast", "Remote Control", "Scooter"].includes(formData.category)) {
+//       if (!formData.size) return alert("Please select a size.");
+//       finalSize = formData.size;
+//     }
+//     if (["Soft Toy", "Board Game"].includes(formData.category)) {
+//       if (!sizeValue || !sizeUnit) return alert("Enter size value AND unit.");
+//       finalSize = `${sizeValue} ${sizeUnit}`;
+//     }
+
+//     setSubmitting(true);
+//     const finalData = {
+//       ...formData,
+//       size: finalSize,
+//       price: Number(formData.price),
+//       costing_price: Number(formData.costing_price),
+//       gst: Number(formData.gst),
+//       Qty: Number(formData.Qty),
+//     };
+
+//     await onSubmit(finalData);
+//     setSubmitting(false);
+//   };
+
+//   // Update Size for Manual Inputs
+//   useEffect(() => {
+//     if (["Soft Toy", "Board Game"].includes(formData.category)) {
+//       if (sizeValue && sizeUnit) {
+//         setFormData((prev) => ({ ...prev, size: `${sizeValue} ${sizeUnit}` }));
+//       }
+//     }
+//   }, [sizeValue, sizeUnit, formData.category]);
+
+//   return (
+//     <form onSubmit={handleSubmit}>
+//       {/* --- Section 1: Basic Info --- */}
+//       <h3 style={styles.sectionTitle}>Basic Information</h3>
+//       <div style={styles.gridContainer}>
+//         <div style={styles.gridItemFull}>
+//           <label style={styles.label}>Product Name</label>
+//           <input
+//             name="name"
+//             value={formData.name}
+//             onChange={handleChange}
+//             style={styles.input}
+//             placeholder="e.g. Red Ferrari Die-cast"
+//             required
+//           />
+//         </div>
+
+//         <div style={styles.gridItemFull}>
+//           <label style={styles.label}>Description</label>
+//           <textarea
+//             name="description"
+//             value={formData.description}
+//             onChange={handleChange}
+//             style={{ ...styles.input, height: "100px", resize: "vertical" }}
+//             placeholder="Product details..."
+//           />
+//         </div>
+
+//         <div style={styles.gridItem}>
+//           <label style={styles.label}>Category</label>
+//           <select name="category" value={formData.category} onChange={handleChange} style={styles.input}>
+//             <option value="Die-cast">Die-cast</option>
+//             <option value="Remote Control">Remote Control</option>
+//             <option value="Soft Toy">Soft Toy</option>
+//             <option value="Board Game">Board Game</option>
+//             <option value="Scooter">Scooter</option>
+//           </select>
+//         </div>
+
+//         {/* Dynamic Size Section */}
+//         <div style={styles.gridItem}>
+//           <label style={styles.label}>Size / Scale</label>
+//           {(formData.category === "Die-cast" || formData.category === "Remote Control") && (
+//             <select name="size" value={formData.size} onChange={handleChange} style={styles.input}>
+//               <option value="">Select Scale</option>
+//               <option value="1:12">1:12</option>
+//               <option value="1:19">1:19</option>
+//               <option value="1:20">1:20</option>
+//               <option value="1:24">1:24</option>
+//               <option value="1:32">1:32</option>
+//             </select>
+//           )}
+
+//           {formData.category === "Scooter" && (
+//             <select name="size" value={formData.size} onChange={handleChange} style={styles.input}>
+//                <option value="">Select Size</option>
+//               <option value="S">S</option>
+//               <option value="M">M</option>
+//               <option value="L">L</option>
+//               <option value="XL">XL</option>
+//             </select>
+//           )}
+
+//           {["Soft Toy", "Board Game"].includes(formData.category) && (
+//             <div style={{ display: "flex", gap: "10px" }}>
+//               <input
+//                 type="number"
+//                 placeholder="Value"
+//                 value={sizeValue}
+//                 onChange={(e) => setSizeValue(e.target.value)}
+//                 style={{ ...styles.input, flex: 2 }}
+//               />
+//               <select
+//                 value={sizeUnit}
+//                 onChange={(e) => setSizeUnit(e.target.value)}
+//                 style={{ ...styles.input, flex: 1 }}
+//               >
+//                 <option value="">Unit</option>
+//                 <option value="cm">cm</option>
+//                 <option value="inch">inch</option>
+//               </select>
+//             </div>
+//           )}
+//         </div>
+//       </div>
+
+//       <hr style={styles.divider} />
+
+//       {/* --- Section 2: Image Upload --- */}
+//       <h3 style={styles.sectionTitle}>Product Image</h3>
+//       <div style={styles.imageUploadBox}>
+//         <input
+//           type="file"
+//           accept="image/*"
+//           onChange={handleImageSelect}
+//           style={styles.fileInput}
+//           disabled={uploading}
+//         />
+//         {preview ? (
+//           <div style={{ textAlign: "center" }}>
+//             <img src={preview} alt="Preview" style={styles.previewImage} />
+//             <p style={{ fontSize: "12px", color: "#2563eb", marginTop: "5px" }}>
+//               {uploading ? "Uploading..." : "Click to change image"}
+//             </p>
+//           </div>
+//         ) : (
+//           <div style={{ padding: "20px", color: "#6b7280" }}>
+//             <p>📂 Click to upload product image</p>
+//           </div>
+//         )}
+//       </div>
+
+//       <hr style={styles.divider} />
+
+//       {/* --- Section 3: Pricing & Inventory --- */}
+//       <h3 style={styles.sectionTitle}>Pricing & Inventory</h3>
+//       <div style={styles.gridContainer}>
+//         <div style={styles.gridItem}>
+//           <label style={styles.label}>Selling Price (₹)</label>
+//           <input
+//             name="price"
+//             type="number"
+//             value={formData.price}
+//             onChange={handleChange}
+//             required
+//             style={styles.input}
+//           />
+//         </div>
+
+//         <div style={styles.gridItem}>
+//           <label style={styles.label}>Cost Price (₹)</label>
+//           <input
+//             name="costing_price"
+//             type="number"
+//             value={formData.costing_price}
+//             onChange={handleChange}
+//             required
+//             style={styles.input}
+//           />
+//         </div>
+
+//         <div style={styles.gridItem}>
+//           <label style={styles.label}>GST (%)</label>
+//           <select name="gst" value={formData.gst} onChange={handleChange} style={styles.input} required>
+//             <option value="">Select GST</option>
+//             <option value="0">0%</option>
+//             <option value="5">5%</option>
+//             <option value="12">12%</option>
+//             <option value="18">18%</option>
+//             <option value="28">28%</option>
+//           </select>
+//         </div>
+
+//         <div style={styles.gridItem}>
+//           <label style={styles.label}>Quantity</label>
+//           <input
+//             name="Qty"
+//             type="number"
+//             min="0"
+//             value={formData.Qty}
+//             onChange={handleChange}
+//             style={styles.input}
+//             required
+//           />
+//         </div>
+
+//         <div style={styles.gridItemFull}>
+//           <label style={styles.label}>Supplier Name</label>
+//           <input
+//             name="Supplier_name"
+//             value={formData.Supplier_name}
+//             onChange={handleChange}
+//             style={styles.input}
+//             required
+//           />
+//         </div>
+//       </div>
+
+//       {/* --- Actions --- */}
+//       <div style={styles.actionButtons}>
+//         <button type="submit" disabled={submitting} style={styles.submitBtn}>
+//           {submitting ? "Processing..." : initialData ? "Update Product" : "Save Product"}
+//         </button>
+//         {onCancel && (
+//           <button type="button" onClick={onCancel} style={styles.cancelBtn}>
+//             Cancel
+//           </button>
+//         )}
+//       </div>
+//     </form>
+//   );
+// }
+
+// // Professional CSS Styles
+// const styles = {
+//   sectionTitle: { fontSize: "18px", fontWeight: "600", color: "#374151", marginBottom: "15px" },
+//   divider: { border: "0", borderTop: "1px solid #e5e7eb", margin: "25px 0" },
+
+//   // Grid System for Form
+//   gridContainer: { display: "flex", flexWrap: "wrap", gap: "20px" },
+//   gridItem: { flex: "1 1 45%", minWidth: "250px" }, // Two columns
+//   gridItemFull: { flex: "1 1 100%" }, // Full width
+
+//   label: { display: "block", fontSize: "14px", fontWeight: "500", color: "#374151", marginBottom: "6px" },
+//   input: {
+//     width: "100%",
+//     padding: "10px 12px",
+//     fontSize: "15px",
+//     borderRadius: "6px",
+//     border: "1px solid #d1d5db",
+//     outline: "none",
+//     boxSizing: "border-box",
+//     transition: "border-color 0.2s",
+//   },
+
+//   // Image Upload Box
+//   imageUploadBox: {
+//     border: "2px dashed #d1d5db",
+//     borderRadius: "8px",
+//     padding: "20px",
+//     textAlign: "center",
+//     position: "relative",
+//     cursor: "pointer",
+//     backgroundColor: "#f9fafb",
+//   },
+//   fileInput: {
+//     position: "absolute",
+//     top: 0, left: 0,
+//     width: "100%", height: "100%",
+//     opacity: 0,
+//     cursor: "pointer",
+//   },
+//   previewImage: { maxWidth: "150px", maxHeight: "150px", borderRadius: "8px", boxShadow: "0 2px 5px rgba(0,0,0,0.1)" },
+
+//   // Buttons
+//   actionButtons: { display: "flex", gap: "15px", marginTop: "30px", justifyContent: "flex-end" },
+//   submitBtn: {
+//     padding: "12px 24px",
+//     backgroundColor: "#1976D2",
+//     color: "#fff",
+//     border: "none",
+//     borderRadius: "6px",
+//     fontSize: "15px",
+//     fontWeight: "600",
+//     cursor: "pointer",
+//   },
+//   cancelBtn: {
+//     padding: "12px 24px",
+//     backgroundColor: "#fff",
+//     color: "#d32f2f",
+//     border: "1px solid #d32f2f",
+//     borderRadius: "6px",
+//     fontSize: "15px",
+//     fontWeight: "600",
+//     cursor: "pointer",
+//   },
+// };
+
+// export default ProductForm;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// import React, { useState, useEffect } from "react";
+// import axios from "axios";
+
+// function ProductForm({ onSubmit, initialData, onCancel }) {
+//   const [sizeValue, setSizeValue] = useState("");
+//   const [sizeUnit, setSizeUnit] = useState("");
+//   const [preview, setPreview] = useState("");
+//   const [uploading, setUploading] = useState(false);
+//   const [submitting, setSubmitting] = useState(false);
+
+//   const [formData, setFormData] = useState({
+//     name: "",
+//     description: "",
+//     category: "Die-cast",
+//     color: "Black",
+//     size: "",
+//     img: "",
+//     price: "",
+//     costing_price: "",
+//     Supplier_name: "",
+//     gst: "",
+//     Qty: 0,
+//   });
+
+//   const colorOptions = [
+//     "Black", "White", "Red", "Blue", "Green", "Yellow", "Orange", "Brown", 
+//     "Grey", "Pink", "Purple", "Silver", "Gold", "Beige", "Maroon", "Navy", 
+//     "Teal", "Cream", "Violet", "Multicolor"
+//   ];
+
+//   useEffect(() => {
+//     if (initialData) {
+//       setFormData({ ...initialData });
+//       if (["Soft Toy", "Board Game"].includes(initialData.category)) {
+//         const parts = (initialData.size || "").split(" ");
+//         if (parts.length === 2) {
+//           setSizeValue(parts[0]);
+//           setSizeUnit(parts[1]);
+//         }
+//       }
+//       setPreview(initialData.img || "");
+//     }
+//   }, [initialData]);
+
+//   useEffect(() => {
+//     setFormData((prev) => ({ ...prev, size: "" }));
+//     setSizeValue("");
+//     setSizeUnit("");
+//   }, [formData.category]);
+
+//   const handleChange = (e) => {
+//     const { name, value } = e.target;
+//     // Quantity ke liye number conversion safety
+//     setFormData({ 
+//       ...formData, 
+//       [name]: name === "Qty" ? (value === "" ? 0 : Number(value)) : value 
+//     });
+//   };
+
+//   // --- 📏 Scale Logic for 1:X format ---
+//   const handleScaleChange = (e) => {
+//     const val = e.target.value;
+//     setFormData({ ...formData, size: val ? `1:${val}` : "" });
+//   };
+
+//   const handleImageSelect = async (e) => {
+//     const file = e.target.files[0];
+//     if (!file) return;
+//     setUploading(true);
+//     const reader = new FileReader();
+//     reader.onloadend = () => setPreview(reader.result);
+//     reader.readAsDataURL(file);
+
+//     try {
+//       const imgData = new FormData();
+//       imgData.append("image", file);
+//       const res = await axios.post("http://localhost:7000/api/products/upload", imgData, {
+//         headers: { "Content-Type": "multipart/form-data" },
+//         withCredentials: true,
+//       });
+//       setFormData((p) => ({ ...p, img: res.data.url }));
+//     } catch (err) {
+//       alert("Image upload failed");
+//     }
+//     setUploading(false);
+//   };
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     if (!formData.img) return alert("Please upload an image.");
+
+//     let finalSize = formData.size;
+//     if (["Soft Toy", "Board Game"].includes(formData.category)) {
+//       if (!sizeValue || !sizeUnit) return alert("Enter size value AND unit.");
+//       finalSize = `${sizeValue} ${sizeUnit}`;
+//     }
+
+//     setSubmitting(true);
+//     await onSubmit({
+//       ...formData,
+//       size: finalSize,
+//       price: Number(formData.price),
+//       costing_price: Number(formData.costing_price),
+//       gst: Number(formData.gst),
+//       Qty: Number(formData.Qty),
+//     });
+//     setSubmitting(false);
+//   };
+
+//   return (
+//     <form onSubmit={handleSubmit}>
+//       <h3 style={styles.sectionTitle}>Basic Information</h3>
+//       <div style={styles.gridContainer}>
+//         <div style={styles.gridItemFull}>
+//           <label style={styles.label}>Product Name</label>
+//           <input name="name" value={formData.name} onChange={handleChange} style={styles.input} placeholder="Name" required />
+//         </div>
+
+//         <div style={styles.gridItemFull}>
+//           <label style={styles.label}>Description</label>
+//           <textarea name="description" value={formData.description} onChange={handleChange} style={{ ...styles.input, height: "80px" }} placeholder="Product details..." />
+//         </div>
+
+//         <div style={styles.gridItem}>
+//           <label style={styles.label}>Category</label>
+//           <select name="category" value={formData.category} onChange={handleChange} style={styles.input}>
+//             <option value="Die-cast">Die-cast</option>
+//             <option value="Remote Control">Remote Control</option>
+//             <option value="Soft Toy">Soft Toy</option>
+//             <option value="Board Game">Board Game</option>
+//             <option value="Scooter">Scooter</option>
+//           </select>
+//         </div>
+
+//         <div style={styles.gridItem}>
+//           <label style={styles.label}>Color</label>
+//           <select name="color" value={formData.color} onChange={handleChange} style={styles.input}>
+//             {colorOptions.map((col) => <option key={col} value={col}>{col}</option>)}
+//           </select>
+//         </div>
+
+//         {/* --- 📏 Dynamic Size/Scale Section --- */}
+//         <div style={styles.gridItem}>
+//           <label style={styles.label}>Size / Scale</label>
+//           {(formData.category === "Die-cast" || formData.category === "Remote Control") ? (
+//             <div style={styles.inputGroupWrapper}>
+//               <span style={styles.prefix}>1 :</span>
+//               <input
+//                 type="number"
+//                 placeholder="Ex: 24, 32, 64"
+//                 value={formData.size.includes(":") ? formData.size.split(":")[1] : ""}
+//                 onChange={handleScaleChange}
+//                 style={styles.inputNoBorder}
+//                 required
+//               />
+//             </div>
+//           ) : formData.category === "Scooter" ? (
+//             <select name="size" value={formData.size} onChange={handleChange} style={styles.input}>
+//               <option value="">Select Size</option>
+//               <option value="S">S</option><option value="M">M</option>
+//               <option value="L">L</option><option value="XL">XL</option>
+//             </select>
+//           ) : (
+//             <div style={{ display: "flex", gap: "10px" }}>
+//               <input type="number" placeholder="Value" value={sizeValue} onChange={(e) => setSizeValue(e.target.value)} style={{ ...styles.input, flex: 2 }} />
+//               <select value={sizeUnit} onChange={(e) => setSizeUnit(e.target.value)} style={{ ...styles.input, flex: 1 }}>
+//                 <option value="">Unit</option><option value="cm">cm</option><option value="inch">inch</option>
+//               </select>
+//             </div>
+//           )}
+//         </div>
+//       </div>
+//       <h3 style={styles.sectionTitle}>Product Image</h3>
+//       <div style={styles.imageUploadBox}>
+//         <input type="file" accept="image/*" onChange={handleImageSelect} style={styles.fileInput} disabled={uploading} />
+//         {preview ? (
+//           <div style={{ textAlign: "center" }}>
+//             <img src={preview} alt="Preview" style={styles.previewImage} />
+//             <p style={{ fontSize: "12px", color: "#2563eb", marginTop: "5px" }}>{uploading ? "Uploading..." : "Click to change"}</p>
+//           </div>
+//         ) : <p style={{ padding: "20px", color: "#6b7280" }}>📂 Click to upload image</p>}
+//       </div>
+
+//       <hr style={styles.divider} />
+//       <h3 style={styles.sectionTitle}>Pricing & Inventory</h3>
+//       <div style={styles.gridContainer}>
+//         <div style={styles.gridItem}>
+//           <label style={styles.label}>Selling Price (₹)</label>
+//           <input name="price" type="number" value={formData.price} onChange={handleChange} required style={styles.input} />
+//         </div>
+//         <div style={styles.gridItem}>
+//           <label style={styles.label}>Cost Price (₹)</label>
+//           <input name="costing_price" type="number" value={formData.costing_price} onChange={handleChange} required style={styles.input} />
+//         </div>
+//         <div style={styles.gridItem}>
+//           <label style={styles.label}>GST (%)</label>
+//           <select name="gst" value={formData.gst} onChange={handleChange} style={styles.input} required>
+//             <option value="">Select GST</option>
+//             <option value="0">0%</option><option value="5">5%</option>
+//             <option value="12">12%</option><option value="18">18%</option><option value="28">28%</option>
+//           </select>
+//         </div>
+//         <div style={styles.gridItem}>
+//           <label style={styles.label}>Quantity</label>
+//           <input
+//             name="Qty"
+//             type="number"
+//             min="0"
+//             // 💡 Quantity clear logic: 0 hai toh khali dikhao
+//             value={formData.Qty === 0 ? "" : formData.Qty}
+//             onChange={handleChange}
+//             placeholder="Ex- 10"
+//             style={styles.input}
+//             required
+//           />
+//         </div>
+//         <div style={styles.gridItemFull}>
+//           <label style={styles.label}>Supplier Name</label>
+//           <input name="Supplier_name" value={formData.Supplier_name} onChange={handleChange} style={styles.input} required />
+//         </div>
+//       </div>
+
+//       <hr style={styles.divider} />
+      
+
+//       <div style={styles.actionButtons}>
+//         <button type="submit" disabled={submitting} style={styles.submitBtn}>
+//           {submitting ? "Processing..." : initialData ? "Update Product" : "Save Product"}
+//         </button>
+//         {onCancel && <button type="button" onClick={onCancel} style={styles.cancelBtn}>Cancel</button>}
+//       </div>
+//     </form>
+//   );
+// }
+
+// const styles = {
+//   sectionTitle: { fontSize: "18px", fontWeight: "600", color: "#374151", marginBottom: "15px" },
+//   divider: { border: "0", borderTop: "1px solid #e5e7eb", margin: "25px 0" },
+//   gridContainer: { display: "flex", flexWrap: "wrap", gap: "20px" },
+//   gridItem: { flex: "1 1 45%", minWidth: "250px" },
+//   gridItemFull: { flex: "1 1 100%" },
+//   label: { display: "block", fontSize: "14px", fontWeight: "500", color: "#374151", marginBottom: "6px" },
+//   input: { width: "100%", padding: "10px 12px", fontSize: "15px", borderRadius: "6px", border: "1px solid #d1d5db", outline: "none", boxSizing: "border-box" },
+  
+//   // 📏 Scale Input Group Styles
+//   inputGroupWrapper: { display: "flex", alignItems: "center", backgroundColor: "#fff", border: "1px solid #d1d5db", borderRadius: "6px", overflow: "hidden" },
+//   prefix: { padding: "10px 12px", backgroundColor: "#f3f4f6", color: "#6b7280", fontWeight: "bold", borderRight: "1px solid #d1d5db", fontSize: "15px" },
+//   inputNoBorder: { flex: 1, padding: "10px 12px", border: "none", outline: "none", fontSize: "15px", width: "100%" },
+
+//   imageUploadBox: { border: "2px dashed #d1d5db", borderRadius: "8px", padding: "20px", textAlign: "center", position: "relative", backgroundColor: "#f9fafb" },
+//   fileInput: { position: "absolute", top: 0, left: 0, width: "100%", height: "100%", opacity: 0, cursor: "pointer" },
+//   previewImage: { maxWidth: "150px", maxHeight: "150px", borderRadius: "8px" },
+//   actionButtons: { display: "flex", gap: "15px", marginTop: "30px", justifyContent: "flex-end" },
+//   submitBtn: { padding: "12px 24px", backgroundColor: "#1976D2", color: "#fff", border: "none", borderRadius: "6px", cursor: "pointer", fontWeight: "600" },
+//   cancelBtn: { padding: "12px 24px", backgroundColor: "#fff", color: "#d32f2f", border: "1px solid #d32f2f", borderRadius: "6px", cursor: "pointer", fontWeight: "600" },
+// };
+
+// export default ProductForm;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// blockInvalidChar
+
+
+
+// import React, { useState, useEffect } from "react";
+// import axios from "axios";
+// import toast from "react-hot-toast"; // 👈 Toast import kiya
+
+// function ProductForm({ onSubmit, initialData, onCancel }) {
+//   const [sizeValue, setSizeValue] = useState("");
+//   const [sizeUnit, setSizeUnit] = useState("");
+//   const [preview, setPreview] = useState("");
+//   const [uploading, setUploading] = useState(false);
+//   const [submitting, setSubmitting] = useState(false);
+
+//   const [formData, setFormData] = useState({
+//     name: "",
+//     description: "",
+//     category: "Die-cast",
+//     color: "Black",
+//     size: "",
+//     img: "",
+//     price: "",
+//     costing_price: "",
+//     Supplier_name: "",
+//     gst: "",
+//     Qty: 0,
+//   });
+
+//   const colorOptions = [
+//     "Black", "White", "Red", "Blue", "Green", "Yellow", "Orange", "Brown", 
+//     "Grey", "Pink", "Purple", "Silver", "Gold", "Beige", "Maroon", "Navy", 
+//     "Teal", "Cream", "Violet", "Multicolor"
+//   ];
+
+//   useEffect(() => {
+//     if (initialData) {
+//       setFormData({ ...initialData });
+//       if (["Soft Toy", "Board Game"].includes(initialData.category)) {
+//         const parts = (initialData.size || "").split(" ");
+//         if (parts.length === 2) {
+//           setSizeValue(parts[0]);
+//           setSizeUnit(parts[1]);
+//         }
+//       }
+//       setPreview(initialData.img || "");
+//     }
+//   }, [initialData]);
+
+//   useEffect(() => {
+//     setFormData((prev) => ({ ...prev, size: "" }));
+//     setSizeValue("");
+//     setSizeUnit("");
+//   }, [formData.category]);
+
+//   const handleChange = (e) => {
+//     const { name, value } = e.target;
+
+//     // 👇 1. STRICT VALIDATION: Name & Supplier Name
+//     if (name === "name" || name === "Supplier_name") {
+      
+//       // Agar value empty hai, toh allow karo (backspace ke liye)
+//       if (value === "") {
+//         setFormData({ ...formData, [name]: value });
+//         return;
+//       }
+
+//       // ❌ Check: Agar koi Number (0-9) hai toh block karo
+//       if (/\d/.test(value)) {
+//         toast.error("Numbers are not allowed!");
+//         return;
+//       }
+
+//       // ✅ Check: Sirf Alphabets aur Safe Symbols allow karo
+//       // Regex Explanation: A-Z, a-z, Space, -, ., &, (, ) allowed hain.
+//       const regex = /^[a-zA-Z\s\-\.\&\(\)]*$/;
+      
+//       if (!regex.test(value)) {
+//          // Agar koi special char (@, #, $) hai toh yahan block hoga
+//          return; 
+//       }
+//     }
+
+//     // Quantity aur baaki fields ke liye normal update
+//     setFormData({ 
+//       ...formData, 
+//       [name]: name === "Qty" ? (value === "" ? 0 : Number(value)) : value 
+//     });
+//   };
+
+//   // --- 📏 Scale Logic for 1:X format ---
+//   const handleScaleChange = (e) => {
+//     const val = e.target.value;
+
+//     // 👇 2. VALIDATION: Scale ke liye sirf Numbers allow karega
+//     if (!/^[0-9]*$/.test(val)) {
+//         return;
+//     }
+
+//     setFormData({ ...formData, size: val ? `1:${val}` : "" });
+//   };
+
+//   const handleImageSelect = async (e) => {
+//     const file = e.target.files[0];
+//     if (!file) return;
+//     setUploading(true);
+//     const reader = new FileReader();
+//     reader.onloadend = () => setPreview(reader.result);
+//     reader.readAsDataURL(file);
+
+//     try {
+//       const imgData = new FormData();
+//       imgData.append("image", file);
+//       const res = await axios.post("http://localhost:7000/api/products/upload", imgData, {
+//         headers: { "Content-Type": "multipart/form-data" },
+//         withCredentials: true,
+//       });
+//       setFormData((p) => ({ ...p, img: res.data.url }));
+//     } catch (err) {
+//       toast.error("Image upload failed");
+//     }
+//     setUploading(false);
+//   };
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     if (!formData.img) return toast.error("Please upload an image.");
+
+//     let finalSize = formData.size;
+//     if (["Soft Toy", "Board Game"].includes(formData.category)) {
+//       if (!sizeValue || !sizeUnit) return toast.error("Enter size value AND unit.");
+//       finalSize = `${sizeValue} ${sizeUnit}`;
+//     }
+
+//     setSubmitting(true);
+//     await onSubmit({
+//       ...formData,
+//       size: finalSize,
+//       price: Number(formData.price),
+//       costing_price: Number(formData.costing_price),
+//       gst: Number(formData.gst),
+//       Qty: Number(formData.Qty),
+//     });
+//     setSubmitting(false);
+//   };
+
+//   return (
+//     <form onSubmit={handleSubmit}>
+//       <h3 style={styles.sectionTitle}>Basic Information</h3>
+//       <div style={styles.gridContainer}>
+//         <div style={styles.gridItemFull}>
+//           <label style={styles.label}>Product Name</label>
+//           <input name="name" value={formData.name} onChange={handleChange} style={styles.input} placeholder="Name" required />
+//         </div>
+
+//         <div style={styles.gridItemFull}>
+//           <label style={styles.label}>Description</label>
+//           <textarea name="description" value={formData.description} onChange={handleChange} style={{ ...styles.input, height: "80px" }} placeholder="Product details..." />
+//         </div>
+
+//         <div style={styles.gridItem}>
+//           <label style={styles.label}>Category</label>
+//           <select name="category" value={formData.category} onChange={handleChange} style={styles.input}>
+//             <option value="Die-cast">Die-cast</option>
+//             <option value="Remote Control">Remote Control</option>
+//             <option value="Soft Toy">Soft Toy</option>
+//             <option value="Board Game">Board Game</option>
+//             <option value="Scooter">Scooter</option>
+//           </select>
+//         </div>
+
+//         <div style={styles.gridItem}>
+//           <label style={styles.label}>Color</label>
+//           <select name="color" value={formData.color} onChange={handleChange} style={styles.input}>
+//             {colorOptions.map((col) => <option key={col} value={col}>{col}</option>)}
+//           </select>
+//         </div>
+
+//         {/* --- 📏 Dynamic Size/Scale Section --- */}
+//         <div style={styles.gridItem}>
+//           <label style={styles.label}>Size / Scale</label>
+//           {(formData.category === "Die-cast" || formData.category === "Remote Control") ? (
+//             <div style={styles.inputGroupWrapper}>
+//               <span style={styles.prefix}>1 :</span>
+//               <input
+//                 type="text" 
+//                 placeholder="Ex: 24, 32, 64"
+//                 value={formData.size.includes(":") ? formData.size.split(":")[1] : ""}
+//                 onChange={handleScaleChange}
+//                 style={styles.inputNoBorder}
+//                 required
+//               />
+//             </div>
+//           ) : formData.category === "Scooter" ? (
+//             <select name="size" value={formData.size} onChange={handleChange} style={styles.input}>
+//               <option value="">Select Size</option>
+//               <option value="S">S</option><option value="M">M</option>
+//               <option value="L">L</option><option value="XL">XL</option>
+//             </select>
+//           ) : (
+//             <div style={{ display: "flex", gap: "10px" }}>
+//               <input 
+//                 type="text" 
+//                 placeholder="Value" 
+//                 value={sizeValue} 
+//                 onChange={(e) => {
+//                     // 👇 3. VALIDATION: Size Value numbers or decimals only
+//                     if (/^[0-9.]*$/.test(e.target.value)) setSizeValue(e.target.value)
+//                 }} 
+//                 style={{ ...styles.input, flex: 2 }} 
+//               />
+//               <select value={sizeUnit} onChange={(e) => setSizeUnit(e.target.value)} style={{ ...styles.input, flex: 1 }}>
+//                 <option value="">Unit</option><option value="cm">cm</option><option value="inch">inch</option>
+//               </select>
+//             </div>
+//           )}
+//         </div>
+//       </div>
+//       <h3 style={styles.sectionTitle}>Product Image</h3>
+//       <div style={styles.imageUploadBox}>
+//         <input type="file" accept="image/*" onChange={handleImageSelect} style={styles.fileInput} disabled={uploading} />
+//         {preview ? (
+//           <div style={{ textAlign: "center" }}>
+//             <img src={preview} alt="Preview" style={styles.previewImage} />
+//             <p style={{ fontSize: "12px", color: "#2563eb", marginTop: "5px" }}>{uploading ? "Uploading..." : "Click to change"}</p>
+//           </div>
+//         ) : <p style={{ padding: "20px", color: "#6b7280" }}>📂 Click to upload image</p>}
+//       </div>
+
+//       <hr style={styles.divider} />
+//       <h3 style={styles.sectionTitle}>Pricing & Inventory</h3>
+//       <div style={styles.gridContainer}>
+//         <div style={styles.gridItem}>
+//           <label style={styles.label}>Selling Price (₹)</label>
+//           <input name="price" type="number" value={formData.price} onChange={handleChange} required style={styles.input} />
+//         </div>
+//         <div style={styles.gridItem}>
+//           <label style={styles.label}>Cost Price (₹)</label>
+//           <input name="costing_price" type="number" value={formData.costing_price} onChange={handleChange} required style={styles.input} />
+//         </div>
+//         <div style={styles.gridItem}>
+//           <label style={styles.label}>GST (%)</label>
+//           <select name="gst" value={formData.gst} onChange={handleChange} style={styles.input} required>
+//             <option value="">Select GST</option>
+//             <option value="0">0%</option><option value="5">5%</option>
+//             <option value="12">12%</option><option value="18">18%</option><option value="28">28%</option>
+//           </select>
+//         </div>
+//         <div style={styles.gridItem}>
+//           <label style={styles.label}>Quantity</label>
+//           <input
+//             name="Qty"
+//             type="number"
+//             min="0"
+//             value={formData.Qty === 0 ? "" : formData.Qty}
+//             onChange={handleChange}
+//             placeholder="Ex- 10"
+//             style={styles.input}
+//             required
+//           />
+//         </div>
+//         <div style={styles.gridItemFull}>
+//           <label style={styles.label}>Supplier Name</label>
+//           <input name="Supplier_name" value={formData.Supplier_name} onChange={handleChange} style={styles.input} required placeholder="Supplier Name (Alphabets only)" />
+//         </div>
+//       </div>
+
+//       <hr style={styles.divider} />
+      
+
+//       <div style={styles.actionButtons}>
+//         <button type="submit" disabled={submitting} style={styles.submitBtn}>
+//           {submitting ? "Processing..." : initialData ? "Update Product" : "Save Product"}
+//         </button>
+//         {onCancel && <button type="button" onClick={onCancel} style={styles.cancelBtn}>Cancel</button>}
+//       </div>
+//     </form>
+//   );
+// }
+
+// const styles = {
+//   sectionTitle: { fontSize: "18px", fontWeight: "600", color: "#374151", marginBottom: "15px" },
+//   divider: { border: "0", borderTop: "1px solid #e5e7eb", margin: "25px 0" },
+//   gridContainer: { display: "flex", flexWrap: "wrap", gap: "20px" },
+//   gridItem: { flex: "1 1 45%", minWidth: "250px" },
+//   gridItemFull: { flex: "1 1 100%" },
+//   label: { display: "block", fontSize: "14px", fontWeight: "500", color: "#374151", marginBottom: "6px" },
+//   input: { width: "100%", padding: "10px 12px", fontSize: "15px", borderRadius: "6px", border: "1px solid #d1d5db", outline: "none", boxSizing: "border-box" },
+  
+//   // 📏 Scale Input Group Styles
+//   inputGroupWrapper: { display: "flex", alignItems: "center", backgroundColor: "#fff", border: "1px solid #d1d5db", borderRadius: "6px", overflow: "hidden" },
+//   prefix: { padding: "10px 12px", backgroundColor: "#f3f4f6", color: "#6b7280", fontWeight: "bold", borderRight: "1px solid #d1d5db", fontSize: "15px" },
+//   inputNoBorder: { flex: 1, padding: "10px 12px", border: "none", outline: "none", fontSize: "15px", width: "100%" },
+
+//   imageUploadBox: { border: "2px dashed #d1d5db", borderRadius: "8px", padding: "20px", textAlign: "center", position: "relative", backgroundColor: "#f9fafb" },
+//   fileInput: { position: "absolute", top: 0, left: 0, width: "100%", height: "100%", opacity: 0, cursor: "pointer" },
+//   previewImage: { maxWidth: "150px", maxHeight: "150px", borderRadius: "8px" },
+//   actionButtons: { display: "flex", gap: "15px", marginTop: "30px", justifyContent: "flex-end" },
+//   submitBtn: { padding: "12px 24px", backgroundColor: "#1976D2", color: "#fff", border: "none", borderRadius: "6px", cursor: "pointer", fontWeight: "600" },
+//   cancelBtn: { padding: "12px 24px", backgroundColor: "#fff", color: "#d32f2f", border: "1px solid #d32f2f", borderRadius: "6px", cursor: "pointer", fontWeight: "600" },
+// };
+
+// export default ProductForm;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// import React, { useState, useEffect } from "react";
+// import axios from "axios";
+// import toast from "react-hot-toast";
+
+// function ProductForm({ onSubmit, initialData, onCancel }) {
+//   const [sizeValue, setSizeValue] = useState("");
+//   const [sizeUnit, setSizeUnit] = useState("");
+//   const [preview, setPreview] = useState("");
+//   const [uploading, setUploading] = useState(false);
+//   const [submitting, setSubmitting] = useState(false);
+
+//   const [formData, setFormData] = useState({
+//     name: "",
+//     description: "",
+//     category: "Die-cast",
+//     color: "Black",
+//     size: "",
+//     img: "",
+//     price: "",
+//     costing_price: "",
+//     Supplier_name: "",
+//     gst: "",
+//     Qty: 0,
+//   });
+
+//   const colorOptions = [
+//     "Black", "White", "Red", "Blue", "Green", "Yellow", "Orange", "Brown", 
+//     "Grey", "Pink", "Purple", "Silver", "Gold", "Beige", "Maroon", "Navy", 
+//     "Teal", "Cream", "Violet", "Multicolor"
+//   ];
+
+//   // ... (useEffect aur baki logic same rahega) ...
+//   useEffect(() => {
+//     if (initialData) {
+//       setFormData({ ...initialData });
+//       if (["Soft Toy", "Board Game"].includes(initialData.category)) {
+//         const parts = (initialData.size || "").split(" ");
+//         if (parts.length === 2) {
+//           setSizeValue(parts[0]);
+//           setSizeUnit(parts[1]);
+//         }
+//       }
+//       setPreview(initialData.img || "");
+//     }
+//   }, [initialData]);
+
+//   useEffect(() => {
+//     setFormData((prev) => ({ ...prev, size: "" }));
+//     setSizeValue("");
+//     setSizeUnit("");
+//   }, [formData.category]);
+
+//   const handleChange = (e) => {
+//     const { name, value } = e.target;
+
+//     // 👇 1. STRICT VALIDATION: Name & Supplier Name
+//     if (name === "name" || name === "Supplier_name") {
+//       if (value === "") {
+//         setFormData({ ...formData, [name]: value });
+//         return;
+//       }
+//       if (/\d/.test(value)) {
+//         toast.error("Numbers are not allowed!");
+//         return;
+//       }
+//       const regex = /^[a-zA-Z\s\-\.\&\(\)]*$/;
+//       if (!regex.test(value)) {
+//          return; 
+//       }
+//     }
+
+//     setFormData({ 
+//       ...formData, 
+//       [name]: name === "Qty" ? (value === "" ? 0 : Number(value)) : value 
+//     });
+//   };
+
+//   const handleScaleChange = (e) => {
+//     const val = e.target.value;
+//     if (!/^[0-9]*$/.test(val)) {
+//         return;
+//     }
+//     setFormData({ ...formData, size: val ? `1:${val}` : "" });
+//   };
+
+//   const handleImageSelect = async (e) => {
+//     const file = e.target.files[0];
+//     if (!file) return;
+//     setUploading(true);
+//     const reader = new FileReader();
+//     reader.onloadend = () => setPreview(reader.result);
+//     reader.readAsDataURL(file);
+
+//     try {
+//       const imgData = new FormData();
+//       imgData.append("image", file);
+//       const res = await axios.post("http://localhost:7000/api/products/upload", imgData, {
+//         headers: { "Content-Type": "multipart/form-data" },
+//         withCredentials: true,
+//       });
+//       setFormData((p) => ({ ...p, img: res.data.url }));
+//     } catch (err) {
+//       toast.error("Image upload failed");
+//     }
+//     setUploading(false);
+//   };
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     if (!formData.img) return toast.error("Please upload an image.");
+
+//     let finalSize = formData.size;
+//     if (["Soft Toy", "Board Game"].includes(formData.category)) {
+//       if (!sizeValue || !sizeUnit) return toast.error("Enter size value AND unit.");
+//       finalSize = `${sizeValue} ${sizeUnit}`;
+//     }
+
+//     setSubmitting(true);
+//     await onSubmit({
+//       ...formData,
+//       size: finalSize,
+//       price: Number(formData.price),
+//       costing_price: Number(formData.costing_price),
+//       gst: Number(formData.gst),
+//       Qty: Number(formData.Qty),
+//     });
+//     setSubmitting(false);
+//   };
+
+//   // 👇 🔥 NEW FUNCTION: 'e', 'E', '+', '-' ko block karne ke liye
+//   const blockInvalidChar = (e) => {
+//     if (["e", "E", "+", "-"].includes(e.key)) {
+//       e.preventDefault();
+//     }
+//   };
+
+//   return (
+//     <form onSubmit={handleSubmit}>
+//       <h3 style={styles.sectionTitle}>Basic Information</h3>
+//       <div style={styles.gridContainer}>
+//         {/* ... Name, Description, Category, Color ... Same as before */}
+//         <div style={styles.gridItemFull}>
+//           <label style={styles.label}>Product Name<span style={styles.requiredStar}>*</span></label>
+//           <input name="name" value={formData.name} onChange={handleChange} style={styles.input} placeholder="Name" required />
+//         </div>
+
+//         <div style={styles.gridItemFull}>
+//           <label style={styles.label}>Description</label>
+//           <textarea name="description" value={formData.description} onChange={handleChange} style={{ ...styles.input, height: "80px" }} placeholder="Product details..." />
+//         </div>
+
+//         <div style={styles.gridItem}>
+//           <label style={styles.label}>Category <span style={styles.requiredStar}>*</span></label>
+//           <select name="category" value={formData.category} onChange={handleChange} style={styles.input}>
+//             <option value="Die-cast">Die-cast</option>
+//             <option value="Remote Control">Remote Control</option>
+//             <option value="Soft Toy">Soft Toy</option>
+//             <option value="Board Game">Board Game</option>
+//             <option value="Scooter">Scooter</option>
+//           </select>
+//         </div>
+
+//         <div style={styles.gridItem}>
+//           <label style={styles.label}>Color <span style={styles.requiredStar}>*</span></label>
+//           <select name="color" value={formData.color} onChange={handleChange} style={styles.input}>
+//             {colorOptions.map((col) => <option key={col} value={col}>{col}</option>)}
+//           </select>
+//         </div>
+
+//         {/* ... Size Logic Same ... */}
+//         <div style={styles.gridItem}>
+//           <label style={styles.label}>Size / Scale <span style={styles.requiredStar}>*</span></label>
+//           {(formData.category === "Die-cast" || formData.category === "Remote Control") ? (
+//             <div style={styles.inputGroupWrapper}>
+//               <span style={styles.prefix}>1 :</span>
+//               <input
+//                 type="text" 
+//                 placeholder="Ex: 24, 32, 64"
+//                 value={formData.size.includes(":") ? formData.size.split(":")[1] : ""}
+//                 onChange={handleScaleChange}
+//                 style={styles.inputNoBorder}
+//                 required
+//               />
+//             </div>
+//           ) : formData.category === "Scooter" ? (
+//             <select name="size" value={formData.size} onChange={handleChange} style={styles.input}>
+//               <option value="">Select Size</option>
+//               <option value="S">S</option><option value="M">M</option>
+//               <option value="L">L</option><option value="XL">XL</option>
+//             </select>
+//           ) : (
+//             <div style={{ display: "flex", gap: "10px" }}>
+//               <input 
+//                 type="text" 
+//                 placeholder="Value" 
+//                 value={sizeValue} 
+//                 onChange={(e) => {
+//                     if (/^[0-9.]*$/.test(e.target.value)) setSizeValue(e.target.value)
+//                 }} 
+//                 style={{ ...styles.input, flex: 2 }} 
+//               />
+//               <select value={sizeUnit} onChange={(e) => setSizeUnit(e.target.value)} style={{ ...styles.input, flex: 1 }}>
+//                 <option value="">Unit</option><option value="cm">cm</option><option value="inch">inch</option>
+//               </select>
+//             </div>
+//           )}
+//         </div>
+//       </div>
+
+//       <h3 style={styles.sectionTitle}>Product Image <span style={styles.requiredStar}>*</span></h3>
+//       <div style={styles.imageUploadBox}>
+//         <input type="file" accept="image/*" onChange={handleImageSelect} style={styles.fileInput} disabled={uploading} />
+//         {preview ? (
+//           <div style={{ textAlign: "center" }}>
+//             <img src={preview} alt="Preview" style={styles.previewImage} />
+//             <p style={{ fontSize: "12px", color: "#2563eb", marginTop: "5px" }}>{uploading ? "Uploading..." : "Click to change"}</p>
+//           </div>
+//         ) : <p style={{ padding: "20px", color: "#6b7280" }}>📂 Click to upload image</p>}
+//       </div>
+
+//       <hr style={styles.divider} />
+//       <h3 style={styles.sectionTitle}>Pricing & Inventory <span style={styles.requiredStar}>*</span></h3>
+//       <div style={styles.gridContainer}>
+        
+//         <div style={styles.gridItem}>
+//           <label style={styles.label}>Selling Price (₹) <span style={styles.requiredStar}>*</span></label>
+//           {/* 👇 Added onKeyDown here */}
+//           <input 
+//             name="price" 
+//             type="number" 
+//             onKeyDown={blockInvalidChar} 
+//             value={formData.price} 
+//             onChange={handleChange} 
+//             required 
+//             style={styles.input} 
+//           />
+//         </div>
+
+//         <div style={styles.gridItem}>
+//           <label style={styles.label}>Cost Price (₹)<span style={styles.requiredStar}>*</span></label>
+//           {/* 👇 Added onKeyDown here */}
+//           <input 
+//             name="costing_price" 
+//             type="number" 
+//             onKeyDown={blockInvalidChar} 
+//             value={formData.costing_price} 
+//             onChange={handleChange} 
+//             required 
+//             style={styles.input} 
+//           />
+//         </div>
+
+//         <div style={styles.gridItem}>
+//           <label style={styles.label}>GST (%) <span style={styles.requiredStar}>*</span></label>
+//           <select name="gst" value={formData.gst} onChange={handleChange} style={styles.input} required>
+//             <option value="">Select GST</option>
+//             <option value="0">0%</option><option value="5">5%</option>
+//             <option value="12">12%</option><option value="18">18%</option><option value="28">28%</option>
+//           </select>
+//         </div>
+
+//         <div style={styles.gridItem}>
+//           <label style={styles.label}>Quantity <span style={styles.requiredStar}>*</span></label>
+//           {/* 👇 Added onKeyDown here also (Optional but good practice) */}
+//           <input
+//             name="Qty"
+//             type="number"
+//             min="0"
+//             onKeyDown={blockInvalidChar}
+//             value={formData.Qty === 0 ? "" : formData.Qty}
+//             onChange={handleChange}
+//             placeholder="Ex- 10"
+//             style={styles.input}
+//             required
+//           />
+//         </div>
+
+//         <div style={styles.gridItemFull}>
+//           <label style={styles.label}>Supplier Name<span style={styles.requiredStar}>*</span></label>
+//           <input name="Supplier_name" value={formData.Supplier_name} onChange={handleChange} style={styles.input} required placeholder="Supplier Name (Alphabets only)" />
+//         </div>
+//       </div>
+
+//       <hr style={styles.divider} />
+      
+//       <div style={styles.actionButtons}>
+//         <button type="submit" disabled={submitting} style={styles.submitBtn}>
+//           {submitting ? "Processing..." : initialData ? "Update Product" : "Save Product"}
+//         </button>
+//         {onCancel && <button type="button" onClick={onCancel} style={styles.cancelBtn}>Cancel</button>}
+//       </div>
+//     </form>
+//   );
+// }
+
+// const styles = {
+//   // ... (Styles same rahenge)
+//   sectionTitle: { fontSize: "18px", fontWeight: "600", color: "#374151", marginBottom: "15px" },
+//   divider: { border: "0", borderTop: "1px solid #e5e7eb", margin: "25px 0" },
+//   gridContainer: { display: "flex", flexWrap: "wrap", gap: "20px" },
+//   requiredStar: {
+//     color: "#ef4444", // Red color
+//     marginLeft: "4px",
+//   },
+//   gridItem: { flex: "1 1 45%", minWidth: "250px" },
+//   gridItemFull: { flex: "1 1 100%" },
+//   label: { display: "block", fontSize: "14px", fontWeight: "500", color: "#374151", marginBottom: "6px" },
+//   input: { width: "100%", padding: "10px 12px", fontSize: "15px", borderRadius: "6px", border: "1px solid #d1d5db", outline: "none", boxSizing: "border-box" },
+//   inputGroupWrapper: { display: "flex", alignItems: "center", backgroundColor: "#fff", border: "1px solid #d1d5db", borderRadius: "6px", overflow: "hidden" },
+//   prefix: { padding: "10px 12px", backgroundColor: "#f3f4f6", color: "#6b7280", fontWeight: "bold", borderRight: "1px solid #d1d5db", fontSize: "15px" },
+//   inputNoBorder: { flex: 1, padding: "10px 12px", border: "none", outline: "none", fontSize: "15px", width: "100%" },
+//   imageUploadBox: { border: "2px dashed #d1d5db", borderRadius: "8px", padding: "20px", textAlign: "center", position: "relative", backgroundColor: "#f9fafb" },
+//   fileInput: { position: "absolute", top: 0, left: 0, width: "100%", height: "100%", opacity: 0, cursor: "pointer" },
+//   previewImage: { maxWidth: "150px", maxHeight: "150px", borderRadius: "8px" },
+//   actionButtons: { display: "flex", gap: "15px", marginTop: "30px", justifyContent: "flex-end" },
+//   submitBtn: { padding: "12px 24px", backgroundColor: "#1976D2", color: "#fff", border: "none", borderRadius: "6px", cursor: "pointer", fontWeight: "600" },
+//   cancelBtn: { padding: "12px 24px", backgroundColor: "#fff", color: "#d32f2f", border: "1px solid #d32f2f", borderRadius: "6px", cursor: "pointer", fontWeight: "600" },
+// };
+
+// export default ProductForm;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// import React, { useState, useEffect } from "react";
+// import axios from "axios";
+// import toast from "react-hot-toast"; // Toast import zaroori hai
+
+// function ProductForm({ onSubmit, initialData, onCancel }) {
+//   const [sizeValue, setSizeValue] = useState("");
+//   const [sizeUnit, setSizeUnit] = useState("");
+//   const [preview, setPreview] = useState("");
+//   const [uploading, setUploading] = useState(false);
+//   const [submitting, setSubmitting] = useState(false);
+
+//   const [formData, setFormData] = useState({
+//     name: "",
+//     description: "",
+//     category: "Die-cast",
+//     color: "Black",
+//     size: "",
+//     img: "",
+//     price: "",
+//     costing_price: "",
+//     Supplier_name: "",
+//     gst: "",
+//     Qty: 0,
+//   });
+
+//   const colorOptions = [
+//     "Black", "White", "Red", "Blue", "Green", "Yellow", "Orange", "Brown", 
+//     "Grey", "Pink", "Purple", "Silver", "Gold", "Beige", "Maroon", "Navy", 
+//     "Teal", "Cream", "Violet", "Multicolor"
+//   ];
+
+//   useEffect(() => {
+//     if (initialData) {
+//       setFormData({ ...initialData });
+//       if (["Soft Toy", "Board Game","Gun"].includes(initialData.category)) {
+//         const parts = (initialData.size || "").split(" ");
+//         if (parts.length === 2) {
+//           setSizeValue(parts[0]);
+//           setSizeUnit(parts[1]);
+//         }
+//       }
+//       setPreview(initialData.img || "");
+//     }
+//   }, [initialData]);
+
+//   useEffect(() => {
+//     setFormData((prev) => ({ ...prev, size: "" }));
+//     setSizeValue("");
+//     setSizeUnit("");
+//   }, [formData.category]);
+
+//   const handleChange = (e) => {
+//     const { name, value } = e.target;
+//     if (name === "Supplier_name") {
+//       if (value === "") {
+//         setFormData({ ...formData, [name]: value });
+//         return;
+//       }
+//       if (/\d/.test(value)) {
+//         toast.error("Numbers are not allowed!");
+//         return;
+//       }
+//       const regex = /^[a-zA-Z\s\-\.\&\(\)]*$/;
+//       if (!regex.test(value)) {
+//          return; 
+//       }
+//     }
+//     setFormData({ 
+//       ...formData, 
+//       [name]: name === "Qty" ? (value === "" ? 0 : Number(value)) : value 
+//     });
+//   };
+
+//   const handleScaleChange = (e) => {
+//     const val = e.target.value;
+//     if (!/^[0-9]*$/.test(val)) {
+//         return;
+//     }
+//     setFormData({ ...formData, size: val ? `1:${val}` : "" });
+//   };
+
+//   const handleImageSelect = async (e) => {
+//     const file = e.target.files[0];
+//     if (!file) return;
+//     setUploading(true);
+//     const reader = new FileReader();
+//     reader.onloadend = () => setPreview(reader.result);
+//     reader.readAsDataURL(file);
+
+//     try {
+//       const imgData = new FormData();
+//       imgData.append("image", file);
+//       const res = await axios.post("http://localhost:7000/api/products/upload", imgData, {
+//         headers: { "Content-Type": "multipart/form-data" },
+//         withCredentials: true,
+//       });
+//       setFormData((p) => ({ ...p, img: res.data.url }));
+//     } catch (err) {
+//       toast.error("Image upload failed");
+//     }
+//     setUploading(false);
+//   };
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     if (!formData.img) return toast.error("Please upload an image.");
+
+//     let finalSize = formData.size;
+//     if (["Soft Toy", "Board Game","Gun"].includes(formData.category)) {
+//       if (!sizeValue || !sizeUnit) return toast.error("Enter size value AND unit.");
+//       finalSize = `${sizeValue} ${sizeUnit}`;
+//     }
+
+//     setSubmitting(true);
+//     await onSubmit({
+//       ...formData,
+//       size: finalSize,
+//       price: Number(formData.price),
+//       costing_price: Number(formData.costing_price),
+//       gst: Number(formData.gst),
+//       Qty: Number(formData.Qty),
+//     });
+//     setSubmitting(false);
+//   };
+
+//   const blockInvalidChar = (e) => {
+//     if (["e", "E", "+", "-"].includes(e.key)) {
+//       e.preventDefault();
+//     }
+//   };
+
+
+//   const handleCancel = () => {
+//     // Check agar form mein kuch data hai
+//     const hasData = 
+//       formData.name !== "" || 
+//       formData.description !== "" || 
+//       formData.price !== "" || 
+//       formData.costing_price !== "" || 
+//       formData.Supplier_name !== "" || 
+//       formData.size !== "" ||
+//       formData.img !== "";
+
+//     if (hasData) {
+//       // 🔥 'id' property use ki hai taaki duplicate toast na aaye
+//       toast((t) => (
+//         <div style={{ 
+//             backgroundColor: "#ffffff",  // Pura White
+//             color: "#000000",            // Pura Black text
+//             padding: "16px", 
+//             borderRadius: "8px", 
+//             // Halka sa shadow taaki white background par alag dikhe
+//             boxShadow: "0 2px 10px rgba(0,0,0,0.1)", 
+//             border: "1px solid #e0e0e0", 
+//             display: "flex", 
+//             flexDirection: "column", 
+//             gap: "12px",
+//             minWidth: "260px"
+//         }}>
+//           <div style={{ fontWeight: "600", fontSize: "15px" }}>
+//             ⚠️ Unsaved changes!
+//             <p style={{ fontWeight: "400", fontSize: "13px", color: "#333", marginTop: "4px" }}>
+//               Are you sure you want to discard changes?
+//             </p>
+//           </div>
+
+//           <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+//             {/* Continue Button */}
+//             <button 
+//               onClick={() => toast.dismiss(t.id)}
+//               style={{ 
+//                 padding: "6px 12px", 
+//                 border: "1px solid #ccc", 
+//                 background: "#f9f9f9", 
+//                 color: "#000",
+//                 borderRadius: "4px", 
+//                 cursor: "pointer",
+//                 fontSize: "13px"
+//               }}
+//             >
+//               Continue
+//             </button>
+
+//             {/* Discard Button */}
+//             <button 
+//               onClick={() => {
+//                 toast.dismiss(t.id);
+//                 onCancel && onCancel();
+//               }}
+//               style={{ 
+//                 padding: "6px 12px", 
+//                 background: "#d32f2f", // Red for discard
+//                 color: "white", 
+//                 border: "none", 
+//                 borderRadius: "4px", 
+//                 cursor: "pointer",
+//                 fontSize: "13px",
+//                 fontWeight: "500"
+//               }}
+//             >
+//               Discard
+//             </button>
+//           </div>
+//         </div>
+//       ), {
+//         id: "cancel-toast", // 🔥 YEH IMPORTNT HAI: Isse duplicate popup nahi aayega
+//         duration: Infinity, 
+//         position: "top-center",
+//         // Default toast style ko transparent kar diya taaki sirf humara div dikhe
+//         style: { background: "transparent", boxShadow: "none" } 
+//       });
+//     } else {
+//       onCancel && onCancel();
+//     }
+//   };
+
+//   return (
+//     <form onSubmit={handleSubmit}>
+//       <h3 style={styles.sectionTitle}>Basic Information</h3>
+//       <div style={styles.gridContainer}>
+//         <div style={styles.gridItemFull}>
+//           <label style={styles.label}>Product Name<span style={styles.requiredStar}>*</span></label>
+//           <input name="name" value={formData.name} onChange={handleChange} style={styles.input} placeholder="Name" required />
+//         </div>
+
+//         <div style={styles.gridItemFull}>
+//           <label style={styles.label}>Description</label>
+//           <textarea name="description" value={formData.description} onChange={handleChange} style={{ ...styles.input, height: "80px" }} placeholder="Product details..." />
+//         </div>
+
+//         <div style={styles.gridItem}>
+//           <label style={styles.label}>Category <span style={styles.requiredStar}>*</span></label>
+//           <select name="category" value={formData.category} onChange={handleChange} style={styles.input}>
+//             <option value="Die-cast">Die-cast</option>
+//             <option value="Remote Control">Remote Control</option>
+//             <option value="Soft Toy">Soft Toy</option>
+//             <option value="Board Game">Board Game</option>
+//             <option value="Scooter">Scooter</option>
+//             <option value="Gun">Gun</option>
+//           </select>
+//         </div>
+
+//         <div style={styles.gridItem}>
+//           <label style={styles.label}>Color <span style={styles.requiredStar}>*</span></label>
+//           <select name="color" value={formData.color} onChange={handleChange} style={styles.input}>
+//             {colorOptions.map((col) => <option key={col} value={col}>{col}</option>)}
+//           </select>
+//         </div>
+
+//         <div style={styles.gridItem}>
+//           <label style={styles.label}>Size / Scale <span style={styles.requiredStar}>*</span></label>
+//           {(formData.category === "Die-cast" || formData.category === "Remote Control") ? (
+//             <div style={styles.inputGroupWrapper}>
+//               <span style={styles.prefix}>1 :</span>
+//               <input
+//                 type="text" 
+//                 placeholder="Ex: 24, 32, 64"
+//                 value={formData.size.includes(":") ? formData.size.split(":")[1] : ""}
+//                 onChange={handleScaleChange}
+//                 style={styles.inputNoBorder}
+//                 required
+//               />
+//             </div>
+//           ) : formData.category === "Scooter" ? (
+//             <select name="size" value={formData.size} onChange={handleChange} style={styles.input}>
+//               <option value="">Select Size</option>
+//               <option value="S">S</option><option value="M">M</option>
+//               <option value="L">L</option><option value="XL">XL</option>
+//             </select>
+//           ) : (
+//             <div style={{ display: "flex", gap: "10px" }}>
+//               <input 
+//                 type="text" 
+//                 placeholder="Value" 
+//                 value={sizeValue} 
+//                 onChange={(e) => {
+//                     if (/^[0-9.]*$/.test(e.target.value)) setSizeValue(e.target.value)
+//                 }} 
+//                 style={{ ...styles.input, flex: 2 }} 
+//               />
+//               <select value={sizeUnit} onChange={(e) => setSizeUnit(e.target.value)} style={{ ...styles.input, flex: 1 }}>
+//                 <option value="">Unit</option><option value="cm">cm</option><option value="inch">inch</option>
+//               </select>
+//             </div>
+//           )}
+//         </div>
+//       </div>
+
+//       <h3 style={styles.sectionTitle}>Product Image <span style={styles.requiredStar}>*</span></h3>
+//       <div style={styles.imageUploadBox}>
+//         <input type="file" accept="image/*" onChange={handleImageSelect} style={styles.fileInput} disabled={uploading} />
+//         {preview ? (
+//           <div style={{ textAlign: "center" }}>
+//             <img src={preview} alt="Preview" style={styles.previewImage} />
+//             <p style={{ fontSize: "12px", color: "#2563eb", marginTop: "5px" }}>{uploading ? "Uploading..." : "Click to change"}</p>
+//           </div>
+//         ) : <p style={{ padding: "20px", color: "#6b7280" }}>📂 Click to upload image</p>}
+//       </div>
+
+//       <hr style={styles.divider} />
+//       <h3 style={styles.sectionTitle}>Pricing & Inventory <span style={styles.requiredStar}>*</span></h3>
+//       <div style={styles.gridContainer}>
+        
+//         <div style={styles.gridItem}>
+//           <label style={styles.label}>Selling Price (₹) <span style={styles.requiredStar}>*</span></label>
+//           <input 
+//             name="price" 
+//             type="number" 
+//             onKeyDown={blockInvalidChar} 
+//             value={formData.price} 
+//             onChange={handleChange} 
+//             required 
+//             style={styles.input} 
+//           />
+//         </div>
+
+//         <div style={styles.gridItem}>
+//           <label style={styles.label}>Cost Price (₹)<span style={styles.requiredStar}>*</span></label>
+//           <input 
+//             name="costing_price" 
+//             type="number" 
+//             onKeyDown={blockInvalidChar} 
+//             value={formData.costing_price} 
+//             onChange={handleChange} 
+//             required 
+//             style={styles.input} 
+//           />
+//         </div>
+
+//         <div style={styles.gridItem}>
+//           <label style={styles.label}>GST (%) <span style={styles.requiredStar}>*</span></label>
+//           <select name="gst" value={formData.gst} onChange={handleChange} style={styles.input} required>
+//             <option value="">Select GST</option>
+//             <option value="0">0%</option><option value="5">5%</option>
+//             <option value="12">12%</option><option value="18">18%</option><option value="28">28%</option>
+//           </select>
+//         </div>
+
+//         <div style={styles.gridItem}>
+//           <label style={styles.label}>Quantity <span style={styles.requiredStar}>*</span></label>
+//           <input
+//             name="Qty"
+//             type="number"
+//             min="0"
+//             onKeyDown={blockInvalidChar}
+//             value={formData.Qty === 0 ? "" : formData.Qty}
+//             onChange={handleChange}
+//             placeholder="Ex- 10"
+//             style={styles.input}
+//             required
+//           />
+//         </div>
+
+//         <div style={styles.gridItemFull}>
+//           <label style={styles.label}>Supplier Name<span style={styles.requiredStar}>*</span></label>
+//           <input name="Supplier_name" value={formData.Supplier_name} onChange={handleChange} style={styles.input} required placeholder="Supplier Name (Alphabets only)" />
+//         </div>
+//       </div>
+
+//       <hr style={styles.divider} />
+      
+//       <div style={styles.actionButtons}>
+//         <button type="submit" disabled={submitting} style={styles.submitBtn}>
+//           {submitting ? "Processing..." : initialData ? "Update Product" : "Save Product"}
+//         </button>
+//         {/* 👇 🔥 BUTTON: Ab ye naya function call karega */}
+//         {onCancel && <button type="button" onClick={handleCancel} style={styles.cancelBtn}>Cancel</button>}
+//       </div>
+//     </form>
+//   );
+// }
+
+// const styles = {
+//   sectionTitle: { fontSize: "18px", fontWeight: "600", color: "#374151", marginBottom: "15px" },
+//   divider: { border: "0", borderTop: "1px solid #e5e7eb", margin: "25px 0" },
+//   gridContainer: { display: "flex", flexWrap: "wrap", gap: "20px" },
+//   requiredStar: {
+//     color: "#ef4444",
+//     marginLeft: "4px",
+//   },
+//   gridItem: { flex: "1 1 45%", minWidth: "250px" },
+//   gridItemFull: { flex: "1 1 100%" },
+//   label: { display: "block", fontSize: "14px", fontWeight: "500", color: "#374151", marginBottom: "6px" },
+//   input: { width: "100%", padding: "10px 12px", fontSize: "15px", borderRadius: "6px", border: "1px solid #d1d5db", outline: "none", boxSizing: "border-box" },
+//   inputGroupWrapper: { display: "flex", alignItems: "center", backgroundColor: "#fff", border: "1px solid #d1d5db", borderRadius: "6px", overflow: "hidden" },
+//   prefix: { padding: "10px 12px", backgroundColor: "#f3f4f6", color: "#6b7280", fontWeight: "bold", borderRight: "1px solid #d1d5db", fontSize: "15px" },
+//   inputNoBorder: { flex: 1, padding: "10px 12px", border: "none", outline: "none", fontSize: "15px", width: "100%" },
+//   imageUploadBox: { border: "2px dashed #d1d5db", borderRadius: "8px", padding: "20px", textAlign: "center", position: "relative", backgroundColor: "#f9fafb" },
+//   fileInput: { position: "absolute", top: 0, left: 0, width: "100%", height: "100%", opacity: 0, cursor: "pointer" },
+//   previewImage: { maxWidth: "150px", maxHeight: "150px", borderRadius: "8px" },
+//   actionButtons: { display: "flex", gap: "15px", marginTop: "30px", justifyContent: "flex-end" },
+//   submitBtn: { padding: "12px 24px", backgroundColor: "#1976D2", color: "#fff", border: "none", borderRadius: "6px", cursor: "pointer", fontWeight: "600" },
+//   cancelBtn: { padding: "12px 24px", backgroundColor: "#fff", color: "#d32f2f", border: "1px solid #d32f2f", borderRadius: "6px", cursor: "pointer", fontWeight: "600" },
+// };
+
+// export default ProductForm;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import toast from "react-hot-toast";
+import { FaBackspace } from "react-icons/fa";
+function ProductForm({ onSubmit, initialData, onCancel }) {
+  const [sizeValue, setSizeValue] = useState("");
+  const [sizeUnit, setSizeUnit] = useState("");
+  const [preview, setPreview] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  
+  // 👉 Yahan hum DB se aane wale PackZone items store karenge
+
+
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    category: "Die-cast",
+    color: "Black",
+    size: "",
+    img: "",
+    price: "",
+    costing_price: "",
+    Supplier_name: "",
+    gst: "",
+    Qty: 0,
+    // Packaging Fields
+    brand_box_sku: "",
+    corrugated_box_sku: "",
+    tag_1_sku: "",
+    tag_2_sku: "",
+    tag_3_sku: "",
+    other_material_sku: "",
+  });
+
+  const colorOptions = [
+    "Black", "White", "Red", "Blue", "Green", "Yellow", "Orange", "Brown", 
+    "Grey", "Pink", "Purple", "Silver", "Gold", "Beige", "Maroon", "Navy", 
+    "Teal", "Cream", "Violet", "Multicolor"
+  ];
+
+
+// ... baaki existing states ...
+
+  // ✅ NEW: PackZone data store karne ke liye state
+  const [packZoneItems, setPackZoneItems] = useState([]);
+
+  // ✅ NEW: PackZone data fetch karne ka effect
+  useEffect(() => {
+    const fetchPackZoneItems = async () => {
+      try {
+        const res = await axios.get("http://localhost:7000/api/packzone", { withCredentials: true });
+        setPackZoneItems(res.data.items || res.data || []);
+      } catch (error) {
+        console.error("Failed to fetch PackZone items", error);
+        toast.error("Could not load packaging items");
+      }
+    };
+    fetchPackZoneItems();
+  }, []);
+
+  // ✅ NEW: Options filter karne ka helper function
+  const getOptionsByCategory = (allowedCategories) => {
+    return packZoneItems
+      .filter(item => allowedCategories.includes(item.category))
+      .map(item => (
+        <option key={item._id} value={item.item_sku}>
+          {item.itemName} ({item.size}) - {item.item_sku}
+        </option>
+      ));
+  };
+
+  // 👉 PackZone ka data fetch karne ke liye useEffect
+  useEffect(() => {
+    const fetchPackZoneItems = async () => {
+      try {
+        // Apne backend URL ke hisab se isko adjust kar lena agar zaroorat ho
+        const res = await axios.get("http://localhost:7000/api/packzone", { withCredentials: true });
+        // API response ke basis par items set karein (Maan lijiye res.data.items me array hai)
+        setPackZoneItems(res.data.items || res.data || []);
+      } catch (error) {
+        console.error("Failed to fetch PackZone items", error);
+        toast.error("Could not load packaging items");
+      }
+    };
+    fetchPackZoneItems();
+  }, []);
+
+  useEffect(() => {
+    if (initialData) {
+      setFormData({ ...initialData });
+      if (["Soft Toy", "Board Game","Gun"].includes(initialData.category)) {
+        const parts = (initialData.size || "").split(" ");
+        if (parts.length === 2) {
+          setSizeValue(parts[0]);
+          setSizeUnit(parts[1]);
+        }
+      }
+      setPreview(initialData.img || "");
+    }
+  }, [initialData]);
+
+  useEffect(() => {
+    setFormData((prev) => ({ ...prev, size: "" }));
+    setSizeValue("");
+    setSizeUnit("");
+  }, [formData.category]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    if (name === "Supplier_name") {
+      if (value === "") {
+        setFormData({ ...formData, [name]: value });
+        return;
+      }
+      if (/\d/.test(value)) {
+        toast.error("Numbers are not allowed!");
+        return;
+      }
+      const regex = /^[a-zA-Z\s\-\.\&\(\)]*$/;
+      if (!regex.test(value)) {
+         return; 
+      }
+    }
+    setFormData({ 
+      ...formData, 
+      [name]: name === "Qty" ? (value === "" ? 0 : Number(value)) : value 
+    });
+  };
+
+  const handleScaleChange = (e) => {
+    const val = e.target.value;
+    if (!/^[0-9]*$/.test(val)) {
+        return;
+    }
+    setFormData({ ...formData, size: val ? `1:${val}` : "" });
+  };
+
+  const handleImageSelect = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    const reader = new FileReader();
+    reader.onloadend = () => setPreview(reader.result);
+    reader.readAsDataURL(file);
+
+    try {
+      const imgData = new FormData();
+      imgData.append("image", file);
+      const res = await axios.post("http://localhost:7000/api/products/upload", imgData, {
+        headers: { "Content-Type": "multipart/form-data" },
+        withCredentials: true,
+      });
+      setFormData((p) => ({ ...p, img: res.data.url }));
+    } catch (err) {
+      toast.error("Image upload failed");
+    }
+    setUploading(false);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.img) return toast.error("Please upload an image.");
+
+    let finalSize = formData.size;
+    if (["Soft Toy", "Board Game","Gun"].includes(formData.category)) {
+      if (!sizeValue || !sizeUnit) return toast.error("Enter size value AND unit.");
+      finalSize = `${sizeValue} ${sizeUnit}`;
+    }
+
+    setSubmitting(true);
+    await onSubmit({
+      ...formData,
+      size: finalSize,
+      price: Number(formData.price),
+      costing_price: Number(formData.costing_price),
+      gst: Number(formData.gst),
+      Qty: Number(formData.Qty),
+    });
+    setSubmitting(false);
+  };
+
+  const blockInvalidChar = (e) => {
+    if (["e", "E", "+", "-"].includes(e.key)) {
+      e.preventDefault();
+    }
+  };
+
+  const handleCancel = () => {
+    const hasData = 
+      formData.name !== "" || 
+      formData.description !== "" || 
+      formData.price !== "" || 
+      formData.costing_price !== "" || 
+      formData.Supplier_name !== "" || 
+      formData.size !== "" ||
+      formData.img !== "" ||
+      formData.brand_box_sku !== "" ||
+      formData.corrugated_box_sku !== "";
+
+    if (hasData) {
+      toast((t) => (
+        <div style={{ backgroundColor: "#ffffff", color: "#000000", padding: "16px", borderRadius: "8px", boxShadow: "0 2px 10px rgba(0,0,0,0.1)", border: "1px solid #e0e0e0", display: "flex", flexDirection: "column", gap: "12px", minWidth: "260px" }}>
+          <div style={{ fontWeight: "600", fontSize: "15px" }}>
+            ⚠️ Unsaved changes!
+            <p style={{ fontWeight: "400", fontSize: "13px", color: "#333", marginTop: "4px" }}>
+              Are you sure you want to discard changes?
+            </p>
+          </div>
+          <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+            <button onClick={() => toast.dismiss(t.id)} style={{ padding: "6px 12px", border: "1px solid #ccc", background: "#f9f9f9", color: "#000", borderRadius: "4px", cursor: "pointer", fontSize: "13px" }}>Continue</button>
+            <button onClick={() => { toast.dismiss(t.id); onCancel && onCancel(); }} style={{ padding: "6px 12px", background: "#d32f2f", color: "white", border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "13px", fontWeight: "500" }}>Discard</button>
+          </div>
+        </div>
+      ), { id: "cancel-toast", duration: Infinity, position: "top-center", style: { background: "transparent", boxShadow: "none" } });
+    } else {
+      onCancel && onCancel();
+    }
+  };
+
+  // Helper function to filter PackZone items by category
+  // const getOptionsByCategory = (allowedCategories) => {
+  //   return packZoneItems
+  //     .filter(item => allowedCategories.includes(item.category))
+  //     .map(item => (
+  //       <option key={item._id} value={item.item_sku}>
+  //         {item.itemName} ({item.size}) - {item.item_sku}
+  //       </option>
+  //     ));
+  // };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <h3 style={styles.sectionTitle}>Basic Information</h3>
+      <div style={styles.gridContainer}>
+        {/* Basic fields remain same as your original code */}
+        <div style={styles.gridItemFull}>
+          <label style={styles.label}>Product Name<span style={styles.requiredStar}>*</span></label>
+          <input name="name" value={formData.name} onChange={handleChange} style={styles.input} placeholder="Name" required />
+        </div>
+
+        <div style={styles.gridItemFull}>
+          <label style={styles.label}>Description</label>
+          <textarea name="description" value={formData.description} onChange={handleChange} style={{ ...styles.input, height: "80px" }} placeholder="Product details..." />
+        </div>
+
+        <div style={styles.gridItem}>
+          <label style={styles.label}>Category <span style={styles.requiredStar}>*</span></label>
+          <select name="category" value={formData.category} onChange={handleChange} style={styles.input}>
+            <option value="Die-cast">Die-cast</option>
+            <option value="Remote Control">Remote Control</option>
+            <option value="Soft Toy">Soft Toy</option>
+            <option value="Board Game">Board Game</option>
+            <option value="Scooter">Scooter</option>
+            <option value="Gun">Gun</option>
+          </select>
+        </div>
+
+        <div style={styles.gridItem}>
+          <label style={styles.label}>Color <span style={styles.requiredStar}>*</span></label>
+          <select name="color" value={formData.color} onChange={handleChange} style={styles.input}>
+            {colorOptions.map((col) => <option key={col} value={col}>{col}</option>)}
+          </select>
+        </div>
+
+        <div style={styles.gridItem}>
+          <label style={styles.label}>Size / Scale <span style={styles.requiredStar}>*</span></label>
+          {(formData.category === "Die-cast" || formData.category === "Remote Control") ? (
+            <div style={styles.inputGroupWrapper}>
+              <span style={styles.prefix}>1 :</span>
+              <input type="text" placeholder="Ex: 24, 32, 64" value={formData.size.includes(":") ? formData.size.split(":")[1] : ""} onChange={handleScaleChange} style={styles.inputNoBorder} required />
+            </div>
+          ) : formData.category === "Scooter" ? (
+            <select name="size" value={formData.size} onChange={handleChange} style={styles.input}>
+              <option value="">Select Size</option>
+              <option value="S">S</option><option value="M">M</option><option value="L">L</option><option value="XL">XL</option>
+            </select>
+          ) : (
+            <div style={{ display: "flex", gap: "10px" }}>
+              <input type="text" placeholder="Value" value={sizeValue} onChange={(e) => { if (/^[0-9.]*$/.test(e.target.value)) setSizeValue(e.target.value) }} style={{ ...styles.input, flex: 2 }} />
+              <select value={sizeUnit} onChange={(e) => setSizeUnit(e.target.value)} style={{ ...styles.input, flex: 1 }}>
+                <option value="">Unit</option><option value="cm">cm</option><option value="inch">inch</option>
+              </select>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <h3 style={styles.sectionTitle} style={{marginTop: "25px"}}>Product Image <span style={styles.requiredStar}>*</span></h3>
+      <div style={styles.imageUploadBox}>
+        <input type="file" accept="image/*" onChange={handleImageSelect} style={styles.fileInput} disabled={uploading} />
+        {preview ? (
+          <div style={{ textAlign: "center" }}>
+            <img src={preview} alt="Preview" style={styles.previewImage} />
+            <p style={{ fontSize: "12px", color: "#2563eb", marginTop: "5px" }}>{uploading ? "Uploading..." : "Click to change"}</p>
+          </div>
+        ) : <p style={{ padding: "20px", color: "#6b7280" }}>📂 Click to upload image</p>}
+      </div>
+
+      <hr style={styles.divider} />
+      <h3 style={styles.sectionTitle}>Pricing & Inventory <span style={styles.requiredStar}>*</span></h3>
+      <div style={styles.gridContainer}>
+        <div style={styles.gridItem}>
+          <label style={styles.label}>Selling Price (₹) <span style={styles.requiredStar}>*</span></label>
+          <input name="price" type="number" onKeyDown={blockInvalidChar} value={formData.price} onChange={handleChange} required style={styles.input} />
+        </div>
+        <div style={styles.gridItem}>
+          <label style={styles.label}>Cost Price (₹)<span style={styles.requiredStar}>*</span></label>
+          <input name="costing_price" type="number" onKeyDown={blockInvalidChar} value={formData.costing_price} onChange={handleChange} required style={styles.input} />
+        </div>
+        <div style={styles.gridItem}>
+          <label style={styles.label}>GST (%) <span style={styles.requiredStar}>*</span></label>
+          <select name="gst" value={formData.gst} onChange={handleChange} style={styles.input} required>
+            <option value="">Select GST</option><option value="0">0%</option><option value="5">5%</option><option value="12">12%</option><option value="18">18%</option><option value="28">28%</option>
+          </select>
+        </div>
+        <div style={styles.gridItem}>
+          <label style={styles.label}>Quantity <span style={styles.requiredStar}>*</span></label>
+          <input name="Qty" type="number" min="0" onKeyDown={blockInvalidChar} value={formData.Qty === 0 ? "" : formData.Qty} onChange={handleChange} placeholder="Ex- 10" style={styles.input} required />
+        </div>
+        <div style={styles.gridItemFull}>
+          <label style={styles.label}>Supplier Name<span style={styles.requiredStar}>*</span></label>
+          <input name="Supplier_name" value={formData.Supplier_name} onChange={handleChange} style={styles.input} required placeholder="Supplier Name (Alphabets only)" />
+        </div>
+      </div>
+
+      {/* ================= DB FETCHED PACKAGING DROPDOWNS ================= */}
+      {/* <hr style={styles.divider} /> */}
+      <h3 style={styles.sectionTitle}>Packaging & Marketing (Select from DB)</h3>
+      <div style={styles.gridContainer}>
+        
+        <div style={styles.gridItem}>
+          <label style={styles.label}>Brand Box</label>
+          <select name="brand_box_sku" value={formData.brand_box_sku} onChange={handleChange} style={styles.input}>
+            <option value="">-- No Box Selected --</option>
+            {/* Box items filter karke dikha rahe hain */}
+            {getOptionsByCategory(["Packaging Boxes"])}
+          </select>
+        </div>
+
+        <div style={styles.gridItem}>
+          <label style={styles.label}>Corrugated Box</label>
+          <select name="corrugated_box_sku" value={formData.corrugated_box_sku} onChange={handleChange} style={styles.input}>
+            <option value="">-- No Corrugated Box --</option>
+            {getOptionsByCategory(["Packaging Boxes"])}
+          </select>
+        </div>
+
+        <div style={styles.gridItem}>
+          <label style={styles.label}>Tag 1 (Primary)</label>
+          <select name="tag_1_sku" value={formData.tag_1_sku} onChange={handleChange} style={styles.input}>
+            <option value="">-- Select Tag --</option>
+            {/* Tags ke liye Marketing Collateral aur Branding Stickers filter */}
+            {getOptionsByCategory(["Marketing Collateral", "Branding Stickers"])}
+          </select>
+        </div>
+
+        <div style={styles.gridItem}>
+          <label style={styles.label}>Tag 2</label>
+          <select name="tag_2_sku" value={formData.tag_2_sku} onChange={handleChange} style={styles.input}>
+            <option value="">-- Select Tag --</option>
+            {getOptionsByCategory(["Marketing Collateral", "Branding Stickers"])}
+          </select>
+        </div>
+
+        <div style={styles.gridItem}>
+          <label style={styles.label}>Tag 3</label>
+          <select name="tag_3_sku" value={formData.tag_3_sku} onChange={handleChange} style={styles.input}>
+            <option value="">-- Select Tag --</option>
+            {getOptionsByCategory(["Marketing Collateral", "Branding Stickers"])}
+          </select>
+        </div>
+
+        <div style={styles.gridItem}>
+          <label style={styles.label}>Other Material</label>
+          <select name="other_material_sku" value={formData.other_material_sku} onChange={handleChange} style={styles.input}>
+            <option value="">-- Select Material --</option>
+            {/* Other material me sab kuch dikha do incase kuch bhi select karna ho */}
+            {getOptionsByCategory(["Marketing Collateral", "Branding Stickers", "Packaging Boxes"])}
+          </select>
+        </div>
+
+      </div>
+
+      <hr style={styles.divider} />
+      
+      <div style={styles.actionButtons}>
+        <button type="submit" disabled={submitting} style={styles.submitBtn}>
+          {submitting ? "Processing..." : initialData ? "Update Product" : "Save Product"}
+        </button>
+        {onCancel && <button type="button" onClick={handleCancel} style={styles.cancelBtn}>Cancel</button>}
+      </div>
+    </form>
+  );
+}
+
+const styles = {
+  sectionTitle: { fontSize: "18px", fontWeight: "600", color: "#374151", marginBottom: "15px", marginTop: "10px" },
+  divider: { border: "0", borderTop: "1px solid #e5e7eb", margin: "25px 0" },
+  gridContainer: { display: "flex", flexWrap: "wrap", gap: "20px" },
+  requiredStar: { color: "#ef4444", marginLeft: "4px" },
+  gridItem: { flex: "1 1 45%", minWidth: "250px" },
+  gridItemFull: { flex: "1 1 100%" },
+  label: { display: "block", fontSize: "14px", fontWeight: "500", color: "#374151", marginBottom: "6px" },
+  input: { width: "100%", padding: "10px 12px", fontSize: "15px", borderRadius: "6px", border: "1px solid #d1d5db", outline: "none", boxSizing: "border-box", backgroundColor: "white" },
+  inputGroupWrapper: { display: "flex", alignItems: "center", backgroundColor: "#fff", border: "1px solid #d1d5db", borderRadius: "6px", overflow: "hidden" },
+  prefix: { padding: "10px 12px", backgroundColor: "#f3f4f6", color: "#6b7280", fontWeight: "bold", borderRight: "1px solid #d1d5db", fontSize: "15px" },
+  inputNoBorder: { flex: 1, padding: "10px 12px", border: "none", outline: "none", fontSize: "15px", width: "100%" },
+  imageUploadBox: { border: "2px dashed #d1d5db", borderRadius: "8px", padding: "20px", textAlign: "center", position: "relative", backgroundColor: "#f9fafb" },
+  fileInput: { position: "absolute", top: 0, left: 0, width: "100%", height: "100%", opacity: 0, cursor: "pointer" },
+  previewImage: { maxWidth: "150px", maxHeight: "150px", borderRadius: "8px" },
+  actionButtons: { display: "flex", gap: "15px", marginTop: "30px", justifyContent: "flex-end" },
+  submitBtn: { padding: "12px 24px", backgroundColor: "#1976D2", color: "#fff", border: "none", borderRadius: "6px", cursor: "pointer", fontWeight: "600" },
+  cancelBtn: { padding: "12px 24px", backgroundColor: "#fff", color: "#d32f2f", border: "1px solid #d32f2f", borderRadius: "6px", cursor: "pointer", fontWeight: "600" },
+};
+
+export default ProductForm;

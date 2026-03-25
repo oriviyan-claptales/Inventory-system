@@ -1,0 +1,113 @@
+/* Font wali lines yahan se hata di hain, kyunki wo index.css me hain */
+*{
+  font-family: 'Inter', sans-serif;
+}
+
+h1 {
+  text-align: center;
+  color: #333;
+}
+
+h2 {
+  color: #444;
+  margin-top: 20px;
+  text-align: center;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 10px;
+  padding: 20px; /* Thoda padding badhaya clean look ke liye */
+  background-color: #fff;
+  border-radius: 10px;
+  width: 50%;
+  max-width: 600px; /* Max width dena acha hota hai */
+  margin-left: auto;
+  margin-right: auto;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+form input, form select, form textarea {
+  width: 80%;
+  padding: 10px;
+  margin: 8px 0;
+  font-size: 15px; /* Thoda professional size */
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  outline: none; /* Focus par default blue line hatane ke liye */
+}
+
+form input:focus, form select:focus, form textarea:focus {
+  border-color: #2563eb; /* Focus par Oriviyan theme blue */
+}
+
+form button {
+  width: 40%;
+  padding: 10px;
+  font-size: 16px;
+  margin: 15px 5px 5px 5px;
+  cursor: pointer;
+  border: none;
+  border-radius: 5px;
+  background-color: #2563eb; /* Green se hata kar professional Blue kiya */
+  color: white;
+  transition: background-color 0.3s;
+  font-weight: 600;
+}
+
+form button:hover {
+  background-color: #1d4ed8;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  background-color: #fff;
+  margin: 15px auto;
+  padding: 20px;
+  border-radius: 10px;
+  width: 60%;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+li h3 {
+  margin: 0 0 10px 0;
+}
+
+li p {
+  margin: 5px 0;
+  color: #64748b; /* Thoda soft text color */
+}
+
+li button {
+  margin-right: 10px;
+  padding: 6px 12px;
+  font-size: 14px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+li button:first-child {
+  background-color: #3b82f6;
+  color: white;
+}
+
+li button:first-child:hover {
+  background-color: #2563eb;
+}
+
+li button:last-child {
+  background-color: #ef4444;
+  color: white;
+}
+
+li button:last-child:hover {
+  background-color: #dc2626;
+}
