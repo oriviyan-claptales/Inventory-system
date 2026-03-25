@@ -1,10 +1,18 @@
 import axios from "axios";
 
+// const api = axios.create({
+//   // baseURL: "http://localhost:7000/api",
+//   baseURL: "https://inventory-system-uvj3.onrender.com/api",
+//   withCredentials: true, // if cookies
+// });
+
+
 const api = axios.create({
-  // baseURL: "http://localhost:7000/api",
   baseURL: "https://inventory-system-uvj3.onrender.com/api",
-  withCredentials: true, // if cookies
+  withCredentials: true
 });
+
+export default api;
 
 
 // JWT TOKEN AUTO ADD
