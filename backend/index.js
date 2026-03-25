@@ -242,12 +242,13 @@ const app = express();
 const PORT = process.env.PORT || 7000;
 
 const MONGO_URL =
-  process.env.MONGO_URI || "mongodb://127.0.0.1:27017/lostfound";
+  process.env.MONGO_URI;
 
 
 app.use(
   cors({
-    origin: "http://localhost:5173", // frontend exact URL
+    // origin: "http://localhost:5173", // frontend exact URL
+    origin: "srv-d5gbkkshg0os73bgldng", // frontend exact URL
     credentials: true,               // cookies allow
   })
 );
