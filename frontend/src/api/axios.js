@@ -12,8 +12,6 @@ const api = axios.create({
   withCredentials: true
 });
 
-export default api;
-
 
 // JWT TOKEN AUTO ADD
 api.interceptors.request.use(
