@@ -248,7 +248,7 @@ const MONGO_URL =
 app.use(
   cors({
     // origin: "http://localhost:5173", // frontend exact URL
-    origin: "srv-d5gbkkshg0os73bgldng", // frontend exact URL
+    origin: "https://inventory.oriviyan.com", // frontend exact URL
     credentials: true,               // cookies allow
   })
 );
